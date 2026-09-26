@@ -319,7 +319,7 @@ def main(path):
         pct = 100 * ok / con if con else 0.0
         summary.append((cat, bucket_of, con, ok, pct, failures))
         print(f"{cat:36}{bucket_of:>10}{con:>11}{ok:>9}{pct:>6.1f}%")
-    print("\n--- fallas de ejemplo (esperado | obtenido) ---")
+    print("\n--- sample failures (expected | produced) ---")
     for cat, _, _, _, pct, failures in summary:
         if pct < 95 and failures:
             print(f"\n{cat}")

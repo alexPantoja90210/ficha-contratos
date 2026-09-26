@@ -25,7 +25,7 @@ RULE = {
         validates="cadena no vacia", measured_pct=97.6, measured_of=510),
     # movida a MODEL tras medir de punta a punta: 86.4% con el parrafo ya
     # localizado, 3.6% teniendo que sacarla del contract raw.
-    "Parties (retirada de regla)": dict(
+    "Parties (dropped from rule bucket)": dict(
         where="Parrafo inicial",
         pattern=r"(?i)\b(?:by and between|between)\b(.{0,400}?)(?:\bwitnesseth\b|\brecitals\b|\n\n|\.\s+[A-Z])",
         validates="al menos 2 entidades", measured_pct=86.4, measured_of=509),

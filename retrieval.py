@@ -230,11 +230,11 @@ def main(ruta_json, ruta_csv):
     bal = sum(r["balanced"] for r in rows) / len(rows)
     sobre = sum(1 for r in rows if r["balanced"] > 55)
     print(f"\nexactitud balanced media : {bal:.1f}%   (chance is 50%)")
-    print(f"categories above 55%: {sobre} de {len(rows)}")
+    print(f"categories above 55%: {sobre} of {len(rows)}")
     if uncalibrated:
         print(f"\nNOT CALIBRATABLE ({len(uncalibrated)}): fewer than "
-              f"{MIN_TO_CALIBRATE} positives en validacion, el threshold no "
-              f"significa nada.\n  " + ", ".join(sorted(uncalibrated)))
+              f"{MIN_TO_CALIBRATE} positives in validation; the threshold means "
+              f"nothing.\n  " + ", ".join(sorted(uncalibrated)))
         print("  These go straight to human review: they are so rare that "
               "reviewlas a mano cuesta poco.")
     Path("retrieval_model.json").write_text(

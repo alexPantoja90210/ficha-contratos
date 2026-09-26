@@ -88,10 +88,10 @@ def main(ruta_json, ruta_csv):
             by_sheet.append((ok_count, judgeable))
             total_rows += judgeable
 
-    print(f"contracts de held_out juzgados: {len(by_sheet)}")
+    print(f"held-out contracts judged: {len(by_sheet)}")
     print(f"judgeable rows in total : {total_rows}\n")
 
-    print(f"{'category':36}{'engine':11}{'ok_count':>6}{'de':>5}{'%':>7}")
+    print(f"{'category':36}{'engine':11}{'ok_count':>6}{'of':>5}{'%':>7}")
     for f in inside:
         b, n = by_cat[f["category"]]
         if n:

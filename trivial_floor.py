@@ -25,7 +25,7 @@ def answer_column(row, category):
 def main(path, out=None):
     rows = list(csv.DictReader(io.StringIO(
         Path(path).read_text(encoding="utf-8-sig", errors="replace"))))
-    reporte = []
+    report = []
     for cat in list(rows[0]):
         if cat.endswith("-Answer") or cat.endswith("- Answer") or cat == "Filename":
             continue
@@ -38,7 +38,7 @@ def main(path, out=None):
             continue
         si, no = vals.count("Yes"), vals.count("No")
         floor = 100 * max(si, no) / len(vals)
-        reporte.append({
+        report.append({
             "category": cat,
             "si": si, "no": no, "total": len(vals),
             "trivial_floor_pct": round(floor, 1),
@@ -48,36 +48,36 @@ def main(path, out=None):
             "valid_metric": "accuracy" if floor < USEFUL else "recall_clase_minoritaria",
             "human_confirmations": min(si, no),
         })
-    reporte.sort(key=lambda r: -r["trivial_floor_pct"])
+    report.sort(key=lambda r: -r["trivial_floor_pct"])
 
-    ancho = max(len(r["category"]) for r in reporte)
+    ancho = max(len(r["category"]) for r in report)
     print(f"{'category':{ancho}}{'Yes':>6}{'No':>6}{'floor':>8}  valid metrictes")
-    for r in reporte:
+    for r in report:
         print(f"{r['category']:{ancho}}{r['si']:>6}{r['no']:>6}"
               f"{r['trivial_floor_pct']:>7.1f}%  {r['valid_metric']}")
 
-    pisos = [r["trivial_floor_pct"] for r in reporte]
-    print(f"\ncategorias de presence        : {len(reporte)}")
+    pisos = [r["trivial_floor_pct"] for r in report]
+    print(f"\npresence categories        : {len(report)}")
     print(f"mean trivial floor          : {sum(pisos)/len(pisos):.1f}%")
     print(f"skewed >= {SKEW_WARNING:.0f}% (accuracy miente): "
           f"{sum(1 for p in pisos if p >= SKEW_WARNING)}")
     print(f"balanceadas (< {USEFUL:.0f}%, accuracy works): "
           f"{sum(1 for p in pisos if p < USEFUL)}")
     print(f"human confirmations if only the rare class is confirmed: "
-          f"{sum(r['human_confirmations'] for r in reporte)} de "
-          f"{len(reporte)*len(rows)} celdas")
+          f"{sum(r['human_confirmations'] for r in report)} of "
+          f"{len(report)*len(rows)} cells")
 
-    print("\nREGLA: no publicar accuracy promediada entre categories. "
-          "Reportar por category\nel avance sobre su floor, y en las sesgadas "
-          "el recall de la clase minoritaria.")
+    print("\nRULE: never publish accuracy averaged across categories. Report, "
+          "per category, its gain over its own floor, and for skewed ones "
+          "the minority-class recall.")
 
     if out:
         with open(out, "w", newline="", encoding="utf-8") as fh:
-            w = csv.DictWriter(fh, fieldnames=list(reporte[0]))
+            w = csv.DictWriter(fh, fieldnames=list(report[0]))
             w.writeheader()
-            w.writerows(reporte)
+            w.writerows(report)
         print(f"\nwritten: {out}")
-    return reporte
+    return report
 
 if __name__ == "__main__":
     main(sys.argv[1] if len(sys.argv) > 1 else "master_clauses.csv",

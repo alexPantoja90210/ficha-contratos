@@ -89,7 +89,7 @@ if __name__ == "__main__":
     for f in inside:
         ing = f"  naive {f['naive']}%" if f.get("naive") is not None else ""
         print(f"  {f['category']:36}{f['engine']:11}{f['measure']:5.1f}%{ing}")
-    print(f"\nFUERA ({len(outside)}) -- con su numero, para que la decision se pueda discutir")
+    print(f"\nOUT OF SCOPE ({len(outside)}) -- with its number, so the decision can be argued with")
     for f in outside:
         rec = f"  recall {f['recall']:.0f}%" if "recall" in f else ""
         ing = (f"  LOSES to the naive parse ({f['naive']}%)"
