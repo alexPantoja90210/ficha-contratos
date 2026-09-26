@@ -14,8 +14,15 @@ Un contrato se nombra por su indice (orden alfabetico del corpus) o por
 cualquier trozo de su nombre, siempre que ese trozo identifique a uno solo.
 Despues de correr esto, hay que publicar `revisor.html`.
 """
-import argparse, json, re, sys
+import argparse, json, os, re, sys
 from pathlib import Path
+
+# El proyecto lee sus datos con rutas relativas (categorias_cubetas.json,
+# recuperacion_resultados.json, plantilla.html), asi que el script se planta
+# en su propia carpeta y se puede invocar desde donde sea.
+AQUI = Path(__file__).resolve().parent
+os.chdir(AQUI)
+sys.path.insert(0, str(AQUI))
 
 import medir_reglas as R, recuperacion as REC
 from localizador import LocalizadorDeTexto, clave
@@ -40,6 +47,23 @@ FECHA = re.compile(
     r"(?i)((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2}"
     r"(?:st|nd|rd|th)?,?\s*\d{4}|\d{1,2}/\d{1,2}/\d{2,4}"
     r"|\d{1,2}\s*(?:st|nd|rd|th|t\s*h)?\s+day\s+of\s+[A-Za-z]+,?\s*\d{4})")
+
+
+# El corpus vive fuera del repositorio (27 MB). Se busca donde suele estar,
+# en vez de exigir que se escriba la ruta en cada corrida.
+CANDIDATOS_CORPUS = [
+    Path("contratos.json"),
+    AQUI / "contratos.json",
+    AQUI.parent / "cuad" / "contratos.json",
+    Path("C:/dev/cuad/contratos.json"),
+    Path.home() / "dev" / "cuad" / "contratos.json",
+]
+
+def corpus_por_omision():
+    for c in CANDIDATOS_CORPUS:
+        if c.is_file():
+            return str(c)
+    return None
 
 
 def resolver(clave_usuario, nombres):
@@ -121,7 +145,8 @@ def armar(nombres_elegidos, contratos, dentro, det, cache):
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--corpus", default="/mnt/user-data/uploads/dev/cuad/contratos.json")
+    ap.add_argument("--corpus", default=None,
+                    help="contratos.json; si se omite se busca en las rutas usuales")
     ap.add_argument("--plantilla", default="plantilla.html")
     ap.add_argument("--salida", default="revisor.html")
     ap.add_argument("--contratos", nargs="*", help="reemplaza la lista entera")
@@ -130,7 +155,15 @@ def main():
     ap.add_argument("--listar", action="store_true")
     a = ap.parse_args()
 
-    contratos = json.loads(Path(a.corpus).read_text(encoding="utf-8"))
+    ruta = a.corpus or corpus_por_omision()
+    if not ruta:
+        print("No encuentro contratos.json. Lo busque en:", file=sys.stderr)
+        for c in CANDIDATOS_CORPUS:
+            print(f"   {c}", file=sys.stderr)
+        sys.exit("Pasa la ruta con --corpus, o reconstruyelo (ver README).")
+    if not Path(ruta).is_file():
+        sys.exit(f"No existe: {ruta}")
+    contratos = json.loads(Path(ruta).read_text(encoding="utf-8"))
     nombres = sorted(contratos)
 
     if a.listar:
