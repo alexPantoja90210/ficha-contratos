@@ -31,7 +31,7 @@ def column_for(row, cat):
                 return c
     return None
 
-def span(row, cat):
+def has_span(row, cat):
     k = key_of(cat)
     for c in row:
         if c.endswith("Answer"):
@@ -69,17 +69,17 @@ def main(ruta_json, ruta_csv):
             cat = f["category"]
             if f["engine"] == "rule":
                 col = column_for(rows[0], cat)
-                real = (row.get(col) or "").strip() if col else ""
-                if not real or R.REDACTED.fullmatch(real):
+                gold = (row.get(col) or "").strip() if col else ""
+                if not gold or R.REDACTED.fullmatch(gold):
                     continue
-                regla, cmp_ = COMPARATORS[key_of(cat)]
-                ok = cmp_(regla(loc.fragments(cat)), real)
+                rule, cmp_ = COMPARATORS[key_of(cat)]
+                ok = cmp_(rule(loc.fragments(cat)), gold)
             else:
-                real = span(row, cat)
-                if real is None:
+                gold = has_span(row, cat)
+                if gold is None:
                     continue
                 state, _, _ = det.evaluate(cat, text)
-                ok = (state == "encontrada") == real
+                ok = (state == "found") == gold
             judgeable += 1
             ok_count += ok
             by_cat[cat][0] += ok
