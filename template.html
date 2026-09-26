@@ -1,4 +1,4 @@
-<title>Revisor de contratos</title>
+<title>Contract Clause Sheet</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@400;600&display=swap">
 <style>
 :root{
@@ -86,11 +86,11 @@ section{margin-top:40px}
 #doc mark.on{outline:2px solid var(--accent);outline-offset:1px}
 
 table{width:100%;border-collapse:collapse;font-size:13.5px}
-#ficha tbody tr{border-top:1px solid var(--line)}
-#ficha tbody tr:first-child{border-top:0}
-#ficha td{padding:9px 12px;vertical-align:top}
-#ficha tr.click{cursor:pointer}
-#ficha tr.click:hover{background:var(--accent-soft)}
+#sheet tbody tr{border-top:1px solid var(--line)}
+#sheet tbody tr:first-child{border-top:0}
+#sheet td{padding:9px 12px;vertical-align:top}
+#sheet tr.click{cursor:pointer}
+#sheet tr.click:hover{background:var(--accent-soft)}
 .cat{font-weight:500}
 .val{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);
      display:block;margin-top:1px;word-break:break-word}
@@ -104,10 +104,10 @@ table{width:100%;border-collapse:collapse;font-size:13.5px}
 .meta{font-family:var(--mono);font-size:11px;color:var(--ink-3);
   display:block;margin-top:3px;font-variant-numeric:tabular-nums}
 .meta b{font-weight:500;color:var(--ok)}
-.pasaje{margin-top:7px;padding:8px 10px;background:var(--surface-2);
+.passage{margin-top:7px;padding:8px 10px;background:var(--surface-2);
   border-left:2px solid var(--line-2);border-radius:0 3px 3px 0;
   font-family:var(--serif);font-size:12.5px;line-height:1.6;color:var(--ink-2)}
-.pasaje em{display:block;font-family:var(--mono);font-size:10px;font-style:normal;
+.passage em{display:block;font-family:var(--mono);font-size:10px;font-style:normal;
   letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px}
 .toggle{font-family:var(--mono);font-size:11px;color:var(--accent);
   background:none;border:0;padding:0;cursor:pointer}
@@ -158,186 +158,186 @@ a{color:var(--accent)}
 
 <div class="wrap">
 <header>
-  <p class="eyebrow">Ficha de cláusulas · CUAD</p>
-  <h1>Ocho cláusulas, y lo que cuesta cada una</h1>
-  <p class="lede">Lee un contrato en texto y devuelve qué dice cada cláusula clave, cuáles no aparecen,
-  y con qué confianza se afirma cada renglón. Cada uno se compara contra el parseo obvio: la primera línea,
-  la primera fecha, el primer estado nombrado.</p>
+  <p class="eyebrow">Clause sheet · CUAD</p>
+  <h1>Eight clauses, and what each one costs</h1>
+  <p class="lede">Reads a contract as plain text and returns what each key clause says, which ones are
+  missing, and how confident each row is. Every row is measured against the obvious parse: the first
+  line, the first date, the first state named.</p>
   <div class="facts">
-    <div class="fact"><b>76.3%</b><span>renglones correctos</span></div>
-    <div class="fact"><b>101</b><span>contratos nunca vistos</span></div>
-    <div class="fact"><b>+23</b><span>puntos sobre el parseo ingenuo</span></div>
-    <div class="fact"><b>8 de 41</b><span>cláusulas en el alcance</span></div>
+    <div class="fact"><b>76.3%</b><span>rows correct</span></div>
+    <div class="fact"><b>101</b><span>contracts never seen</span></div>
+    <div class="fact"><b>+30</b><span>points over the naive parse</span></div>
+    <div class="fact"><b>8 of 41</b><span>clauses in scope</span></div>
   </div>
 </header>
 
 <section>
   <div class="sechead">
-    <h2>La ficha</h2>
-    <p>Tres contratos reales de la partición de prueba, exhibits presentados ante la SEC. Cada renglón
-    dice a qué profundidad del documento apareció la cláusula y qué saca ahí el parseo ingenuo. Los
-    resueltos por regla saltan al párrafo; los de presencia muestran el pasaje mejor puntuado.</p>
+    <h2>The sheet</h2>
+    <p>Three real contracts from the held-out split, exhibits filed with the SEC. Each row says how deep
+    into the document the clause was found and what the naive parse scores there. Rule-based rows jump to
+    the paragraph; presence rows show the highest-scoring passage.</p>
   </div>
   <div class="picker" id="picker"></div>
   <div class="split">
     <div class="panel">
-      <div class="panel-head"><span class="eyebrow">Contrato</span><span class="eyebrow" id="docmeta"></span></div>
+      <div class="panel-head"><span class="eyebrow">Contract</span><span class="eyebrow" id="docmeta"></span></div>
       <div id="doc"></div>
     </div>
     <div class="panel">
-      <div class="panel-head"><span class="eyebrow">Ficha · 8 cláusulas</span><span class="eyebrow">acierto</span></div>
-      <table id="ficha"><tbody></tbody></table>
-      <div class="foot" id="fichafoot"></div>
+      <div class="panel-head"><span class="eyebrow">Sheet · 8 clauses</span><span class="eyebrow">held-out accuracy</span></div>
+      <table id="sheet"><tbody></tbody></table>
+      <div class="foot" id="sheetfoot"></div>
     </div>
   </div>
 </section>
 
 <section>
   <div class="sechead">
-    <h2>La evidencia</h2>
-    <p>Acierto por categoría sobre los 101 contratos de prueba. La marca gris es el parseo ingenuo.
-    La distancia entre la marca y el final de la barra es lo único que este trabajo aporta; donde no hay
-    distancia, no aporta nada.</p>
+    <h2>The evidence</h2>
+    <p>Accuracy per category over the 101 held-out contracts. The grey mark is the naive parse. The
+    distance between that mark and the end of the bar is the only thing this work adds; where there is
+    no distance, it adds nothing.</p>
   </div>
   <div class="bars" id="bars"></div>
   <div class="axis"><span>0%</span><span>50%</span><span>100%</span></div>
   <div class="key">
-    <span><i></i>el producto</span>
-    <span><i class="t"></i>parseo ingenuo: primera línea, primera fecha, primer estado, «no está» siempre</span>
+    <span><i></i>this product</span>
+    <span><i class="t"></i>naive parse: first line, first date, first state named, "not present" always</span>
   </div>
 </section>
 
 <section>
-  <div class="sechead"><h2>Por qué ocho y no cuarenta y una</h2></div>
+  <div class="sechead"><h2>Why eight and not forty-one</h2></div>
   <div class="cols">
     <div class="card">
-      <h3>El criterio se escribió antes de ver los resultados</h3>
-      <p>Una categoría entra solo si puede cerrarse sola con evidencia.</p>
-      <p class="crit">por regla: acierto de punta a punta ≥ 65%<br>por presencia: balanceada ≥ 70% <b>y</b> recall ≥ 70%<br>todas: debe ganarle al parseo ingenuo</p>
+      <h3>The criterion was written before any results</h3>
+      <p>A category is in scope only if it can close on its own, with evidence.</p>
+      <p class="crit">rule: end-to-end accuracy &ge; 65%<br>presence: balanced &ge; 70% <b>and</b> recall &ge; 70%<br>both: must beat the naive parse</p>
     </div>
     <div class="card">
-      <h3>Dos categorías se cayeron al medir lo obvio</h3>
-      <p><i>Warranty Duration</i> y <i>No-Solicit of Employees</i> tenían balanceada de 76% y 75.6%, y
-      pasaban el criterio. Pero responder «no está» siempre saca 83% y 90% en esas dos: el producto
-      perdía por 7 y por 10 puntos. Salieron del alcance.</p>
+      <h3>Two categories fell when we measured the obvious</h3>
+      <p><i>Warranty Duration</i> and <i>No-Solicit of Employees</i> had balanced accuracy of 76% and
+      75.6% and passed the criterion. But answering "not present" every time scores 83% and 90% on those
+      two: the product lost by 7 and 10 points. Out of scope.</p>
     </div>
     <div class="card">
-      <h3>Dos motores, repartidos por medición</h3>
-      <p>Los dos renglones que se ven más triviales son donde el parseo ingenuo se desploma. La primera
-      línea de un contrato casi nunca es el título — es <i>Exhibit 10.4</i>, <i>EXECUTION COPY</i>, un
-      número de página: 5% contra 66%. Y el primer estado nombrado casi nunca es la ley aplicable, sino
-      un domicilio o la constitución en Delaware: 38% contra 90%.</p>
+      <h3>Two engines, assigned by measurement</h3>
+      <p>The two rows that look most trivial are where the naive parse collapses. The first line of a
+      contract is almost never the title &mdash; it is <i>Exhibit 10.4</i>, <i>EXECUTION COPY</i>, a page
+      number: 5% against 66%. And the first state named is almost never the governing law but a mailing
+      address or a Delaware incorporation: 38% against 90%.</p>
     </div>
   </div>
   <div class="out">
     <table>
-      <thead><tr><th>Fuera del alcance</th><th>motor</th><th>medida</th><th>recall</th></tr></thead>
-      <tbody id="fuera"></tbody>
+      <thead><tr><th>Out of scope</th><th>engine</th><th>measure</th><th>recall</th></tr></thead>
+      <tbody id="outside"></tbody>
     </table>
   </div>
 </section>
 
 <section>
-  <div class="sechead"><h2>Lo que no hace</h2></div>
+  <div class="sechead"><h2>What it does not do</h2></div>
   <div class="cols">
-    <div class="card"><h3>No es asesoría legal</h3><p>Localiza cláusulas y señala ausencias para que una persona las lea. No opina sobre si una cláusula conviene.</p></div>
-    <div class="card"><h3>Una ficha perfecta es rara</h3><p>16% de las fichas salen sin un solo error; 47% tienen 80% o más correcto. Lo normal son seis o siete renglones de ocho.</p></div>
-    <div class="card"><h3>Dice si está, no siempre dónde</h3><p>Las categorías por regla saltan al párrafo exacto. Las de presencia muestran el pasaje que más puntuó, sin garantía de que sea la cláusula: en prueba, la ubicación acierta entre 12% y 46%.</p></div>
-    <div class="card"><h3>Inglés y derecho estadounidense</h3><p>El corpus son 510 contratos comerciales anotados por abogados. Llevarlo a contratos en español es otro proyecto.</p></div>
+    <div class="card"><h3>Not legal advice</h3><p>It locates clauses and flags absences so a person can read them. It does not judge whether a clause is favourable.</p></div>
+    <div class="card"><h3>A perfect sheet is rare</h3><p>16% of sheets come out with no errors at all; 47% are 80% correct or better. Six or seven correct rows out of eight is the normal case.</p></div>
+    <div class="card"><h3>Says whether, not always where</h3><p>Rule-based rows jump to the exact paragraph. Presence rows show the highest-scoring passage with no guarantee it is the clause: on the held-out split, location is right between 12% and 46% of the time.</p></div>
+    <div class="card"><h3>English, US law</h3><p>The corpus is 510 commercial contracts annotated by attorneys. Porting this to Spanish contracts is a different project.</p></div>
   </div>
 </section>
 
 <footer>
-  <span>Corpus: <a href="https://github.com/TheAtticusProject/cuad">CUAD</a>, 510 contratos, CC BY 4.0</span>
-  <span>Partición por contrato, nunca por pregunta</span>
-  <span>Medición reproducible en un comando</span>
-  <span id="sello">__SELLO__</span>
+  <span>Corpus: <a href="https://github.com/TheAtticusProject/cuad">CUAD</a>, 510 contracts, CC BY 4.0</span>
+  <span>Split by contract, never by question</span>
+  <span>Measurement reproducible in one command</span>
+  <span id="stamp">__STAMP__</span>
 </footer>
 </div>
 
 <script>
-const DATOS = __DATOS__;
-const EVID  = __EVID__;
-const FUERA = __FUERA__;
+const DATA = __DATOS__;
+const EVIDENCE  = __EVID__;
+const OUTSIDE = __FUERA__;
 
 const esc = s => s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const doc = document.getElementById('doc');
-const tb  = document.querySelector('#ficha tbody');
+const tb  = document.querySelector('#sheet tbody');
 let actual = 0;
 
-function pintarDoc(c){
-  const porRango = new Map();
-  c.entradas.filter(e => e.rango).forEach(e => {
-    const k = e.rango[0] + ':' + e.rango[1];
-    if (!porRango.has(k)) porRango.set(k, {a:e.rango[0], b:e.rango[1], cats:[]});
-    porRango.get(k).cats.push(e.categoria);
+function paintDoc(c){
+  const byRange = new Map();
+  c.rows.filter(e => e.span_range).forEach(e => {
+    const k = e.span_range[0] + ':' + e.span_range[1];
+    if (!byRange.has(k)) byRange.set(k, {a:e.span_range[0], b:e.span_range[1], cats:[]});
+    byRange.get(k).cats.push(e.category);
   });
-  const rangos = [...porRango.values()].sort((x,y) => x.a - y.a);
+  const ranges = [...byRange.values()].sort((x,y) => x.a - y.a);
   let out = '', pos = 0, n = 0;
-  for (const r of rangos){
+  for (const r of ranges){
     if (r.a < pos) continue;
-    out += esc(c.texto.slice(pos, r.a));
-    out += `<mark id="m${n++}" data-cat="${esc(r.cats.join('|'))}">${esc(c.texto.slice(r.a, r.b))}</mark>`;
+    out += esc(c.text.slice(pos, r.a));
+    out += `<mark id="m${n++}" data-cat="${esc(r.cats.join('|'))}">${esc(c.text.slice(r.a, r.b))}</mark>`;
     pos = r.b;
   }
-  out += esc(c.texto.slice(pos));
+  out += esc(c.text.slice(pos));
   doc.innerHTML = out;
   doc.scrollTop = 0;
   document.getElementById('docmeta').textContent =
-    (c.texto.length/1000).toFixed(0) + ' mil caracteres';
+    (c.text.length/1000).toFixed(0) + ' thousand characters';
 }
 
 const CHIP = {
-  encontrada:['ok','resuelta'], ausente:['no','no aparece'],
-  por_confirmar:['rev','revisar'], ausente_por_confirmar:['rev','confirmar'],
-  pendiente_modelo:['rev','modelo']
+  found:['ok','resolved'], absent:['no','not present'],
+  review:['rev','review'], absent_review:['rev','confirm'],
+  model_pending:['rev','model']
 };
-const TEXTO = {
-  ausente:'no aparece en el contrato', por_confirmar:'candidata: la ve una persona',
-  ausente_por_confirmar:'no la veo; confirmar', pendiente_modelo:'la regla perdió'
+const LABEL = {
+  absent:'not present in this contract', review:'candidate: a person reviews it',
+  absent_review:'do not see it; confirm', model_pending:'the rule lost'
 };
 
-function pintarFicha(c){
+function paintSheet(c){
   tb.innerHTML = '';
-  const orden = {encontrada:0, por_confirmar:1, ausente_por_confirmar:2, ausente:3, pendiente_modelo:4};
-  [...c.entradas].sort((a,b) => (orden[a.estado]-orden[b.estado]) ||
-      a.categoria.localeCompare(b.categoria)).forEach(e => {
-    const [cls, lbl] = CHIP[e.estado] || ['no','—'];
+  const order = {found:0, review:1, absent_review:2, absent:3, model_pending:4};
+  [...c.rows].sort((a,b) => (order[a.state]-order[b.state]) ||
+      a.category.localeCompare(b.category)).forEach(e => {
+    const [cls, lbl] = CHIP[e.state] || ['no','—'];
     const tr = document.createElement('tr');
-    const saltable = !!e.rango;
-    if (saltable){ tr.className = 'click'; tr.tabIndex = 0;
-      tr.addEventListener('click', () => saltar(e.categoria));
-      tr.addEventListener('keydown', ev => { if(ev.key==='Enter') saltar(e.categoria); });
+    const jumpable = !!e.span_range;
+    if (jumpable){ tr.className = 'click'; tr.tabIndex = 0;
+      tr.addEventListener('click', () => jumpTo(e.category));
+      tr.addEventListener('keydown', ev => { if(ev.key==='Enter') jumpTo(e.category); });
     }
     const meta = [];
-    if (e.prof != null) meta.push(`al ${e.prof}% del documento`);
-    if (e.ingenuo != null && e.confianza)
-      meta.push(`ingenuo ${e.ingenuo}% → <b>${e.confianza.toFixed(0)}%</b>`);
+    if (e.depth != null) meta.push(`at ${e.depth}% of the document`);
+    if (e.naive != null && e.confidence)
+      meta.push(`naive ${e.naive}% → <b>${e.confidence.toFixed(0)}%</b>`);
     tr.innerHTML =
       `<td style="width:1%"><span class="chip ${cls}">${lbl}</span></td>` +
-      `<td><span class="cat">${esc(e.categoria)}</span>` +
-      `<span class="val">${esc(e.valor || TEXTO[e.estado] || '')}` +
-      (saltable ? ' <span class="jump">↗ ver</span>' : '') + `</span>` +
+      `<td><span class="cat">${esc(e.category)}</span>` +
+      `<span class="val">${esc(e.value || LABEL[e.state] || '')}` +
+      (jumpable ? ' <span class="jump">↗ show</span>' : '') + `</span>` +
       (meta.length ? `<span class="meta">${meta.join(' · ')}</span>` : '') +
-      (e.pasaje ? `<button class="toggle" type="button">ver pasaje</button>
-         <div class="pasaje" hidden><em>Pasaje mejor puntuado · la ubicación no está garantizada</em>${esc(e.pasaje)}</div>` : '') +
+      (e.passage ? `<button class="toggle" type="button">show passage</button>
+         <div class="passage" hidden><em>Highest-scoring passage · location not guaranteed</em>${esc(e.passage)}</div>` : '') +
       `</td>` +
-      `<td class="conf">${e.confianza ? e.confianza.toFixed(0)+'%' : '—'}</td>`;
+      `<td class="conf">${e.confidence ? e.confidence.toFixed(0)+'%' : '—'}</td>`;
     const bt = tr.querySelector('.toggle');
     if (bt) bt.addEventListener('click', ev => {
       ev.stopPropagation();
-      const d = tr.querySelector('.pasaje');
+      const d = tr.querySelector('.passage');
       d.hidden = !d.hidden;
-      bt.textContent = d.hidden ? 'ver pasaje' : 'ocultar pasaje';
+      bt.textContent = d.hidden ? 'show passage' : 'hide passage';
     });
     tb.appendChild(tr);
   });
-  const res = c.entradas.filter(e => e.estado==='encontrada' || e.estado==='ausente').length;
-  document.getElementById('fichafoot').textContent =
-    `${res} de ${c.entradas.length} renglones cierran solos · 27 categorías quedaron fuera del alcance`;
+  const done = c.rows.filter(e => e.state==='found' || e.state==='absent').length;
+  document.getElementById('sheetfoot').textContent =
+    `${done} of ${c.rows.length} rows close on their own · 27 categories are out of scope`;
 }
 
-function saltar(cat){
+function jumpTo(cat){
   const m = [...doc.querySelectorAll('mark')].find(x => x.dataset.cat.split('|').includes(cat));
   if (!m) return;
   doc.querySelectorAll('mark.on').forEach(x => x.classList.remove('on'));
@@ -345,25 +345,25 @@ function saltar(cat){
   doc.scrollTo({top: m.offsetTop - doc.clientHeight/3, behavior:'smooth'});
 }
 
-function elegir(i){
+function choose(i){
   actual = i;
   [...document.querySelectorAll('#picker button')].forEach((b,j) =>
     b.setAttribute('aria-pressed', j === i));
-  pintarDoc(DATOS[i]); pintarFicha(DATOS[i]);
+  paintDoc(DATA[i]); paintSheet(DATA[i]);
 }
 
 const pick = document.getElementById('picker');
-DATOS.forEach((c,i) => {
+DATA.forEach((c,i) => {
   const b = document.createElement('button');
   b.type = 'button';
-  b.textContent = c.nombre.split('_')[0].slice(0,34);
-  b.title = c.nombre;
-  b.addEventListener('click', () => elegir(i));
+  b.textContent = c.name.split('_')[0].slice(0,34);
+  b.title = c.name;
+  b.addEventListener('click', () => choose(i));
   pick.appendChild(b);
 });
 
 const bars = document.getElementById('bars');
-EVID.forEach(e => {
+EVIDENCE.forEach(e => {
   const d = document.createElement('div');
   d.className = 'bar';
   d.innerHTML = `<span class="nm">${esc(e.cat)}</span>` +
@@ -373,13 +373,13 @@ EVID.forEach(e => {
   bars.appendChild(d);
 });
 
-const fb = document.getElementById('fuera');
-FUERA.forEach(f => {
+const fb = document.getElementById('outside');
+OUTSIDE.forEach(f => {
   const tr = document.createElement('tr');
-  tr.innerHTML = `<td>${esc(f.categoria)}</td><td>${f.motor}</td>` +
-    `<td>${f.medida.toFixed(1)}%</td><td>${f.recall != null ? f.recall.toFixed(0)+'%' : '—'}</td>`;
+  tr.innerHTML = `<td>${esc(f.category)}</td><td>${f.engine}</td>` +
+    `<td>${f.measure.toFixed(1)}%</td><td>${f.recall != null ? f.recall.toFixed(0)+'%' : '—'}</td>`;
   fb.appendChild(tr);
 });
 
-elegir(0);
+choose(0);
 </script>

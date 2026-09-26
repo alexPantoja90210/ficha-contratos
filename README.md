@@ -1,119 +1,157 @@
-# Revisor de contratos — 10 cláusulas, medidas
+# Contract clause sheet — eight clauses, each with its number
 
-Lee un contrato en texto y devuelve una ficha de **10 cláusulas**: qué dice
-cada una, cuáles no aparecen, y **con qué confianza** se afirma cada renglón.
+Reads a contract as plain text and returns a **sheet of eight clauses**: what each
+one says, which ones are missing, and **how confident that row is**.
 
-Corre sin modelo, sin llaves de API y sin base de datos. Un contrato tarda
-menos de un segundo.
+No model, no API keys, no database. Under a second per contract, and the only
+dependency is the Python standard library.
 
 ```bash
-python ficha.py contratos.json 433
+python ficha.py contracts.json 433
 ```
 
 ```
 [ok] Agreement Date        5/3/16          74%
-[ok] Audit Rights          presente        75%
+[ok] Audit Rights          present         75%
 [ok] Governing Law         Maryland        92%
-[ok] License Grant         presente        77%
-[?]  Cap on Liability      revisar         84%
-[  ] Warranty Duration     no aparece      76%
+[ok] License Grant         present         77%
+[?]  Cap on Liability      review          84%
+[  ] Warranty Duration     not present     76%
 ```
 
-## Qué tan bien funciona
+## How well it works
 
-Medido sobre **101 contratos que el sistema nunca vio** (partición de prueba
-de [CUAD](https://github.com/TheAtticusProject/cuad), 510 contratos
-comerciales anotados por abogados), 950 renglones juzgables:
+Measured on **101 contracts the system never saw** — the held-out split of
+[CUAD](https://github.com/TheAtticusProject/cuad), 510 commercial contracts
+annotated by attorneys — over 950 judgeable rows:
 
 | | |
 |---|---:|
-| Renglones correctos | **76.7%** |
-| Fichas con 80% o más correcto | 53% |
-| Fichas sin un solo error | 12% |
+| Rows correct | **76.3%** |
+| Gain over a naive parse | **+30 points** |
+| Sheets with 80% or more correct | 47% |
+| Sheets without a single error | 16% |
 
-Por categoría:
+Per category, against the naive parse it has to beat:
 
-| Categoría | Motor | Acierto |
-|---|---|---:|
-| Governing Law | regla | 90% |
-| Cap on Liability | presencia | 86% |
-| No-Solicit of Employees | presencia | 80% |
-| License Grant | presencia | 76% |
-| Warranty Duration | presencia | 76% |
-| Insurance | presencia | 76% |
-| Agreement Date | regla | 74% |
-| Audit Rights | presencia | 73% |
-| Effective Date | regla | 67% |
-| Document Name | regla | 66% |
+| Clause | Engine | Naive | This |
+|---|---|---:|---:|
+| Governing Law | rule | 38% | **90%** |
+| Cap on Liability | presence | 42% | **86%** |
+| License Grant | presence | 55% | 76% |
+| Insurance | presence | 65% | 76% |
+| Agreement Date | rule | 53% | 74% |
+| Audit Rights | presence | 56% | 73% |
+| Effective Date | rule | 50% | 67% |
+| Document Name | rule | 5% | **66%** |
 
-## Por qué solo 10 de 41
+The naive parse is what anyone would write in an afternoon: the first line as the
+title, the first date in the document, the first state named, and "not present"
+for every yes/no question. `baseline_naive.py` computes it, and every claim here
+is measured against it.
 
-CUAD define 41 categorías. Las otras 31 **no pasaron el corte**, y el corte
-está escrito antes de mirar los resultados (`alcance.py`):
+The two rows that look most trivial on screen are where the naive parse collapses.
+The first line of a contract is almost never the title — it is `Exhibit 10.4`,
+`EXECUTION COPY`, a page number. And the first state named is almost never the
+governing law; it is a mailing address or a Delaware incorporation.
 
-- por regla: acierto de punta a punta ≥ 65%
-- por presencia: exactitud balanceada ≥ 70% **y** recall ≥ 70%
+## Why eight clauses and not forty-one
 
-El recall está en el criterio a propósito. Una categoría que detecta bien pero
-se le escapan las que sí están no puede afirmar ausencia — y una ficha que no
-puede decir "no está" no sirve para revisar un contrato.
+CUAD defines 41 categories. The other 33 **did not make the cut**, and the cut was
+written before looking at any results (`scope.py`):
 
-`python alcance.py` imprime las 41 con su número, dentro y fuera, para que la
-decisión se pueda discutir en vez de creerse.
+- rule-based: end-to-end accuracy ≥ 65%
+- presence: balanced accuracy ≥ 70% **and** recall ≥ 70%
+- both: must beat the naive parse
 
-## Dos motores
+Recall is in the criterion on purpose. A category that detects well but misses the
+ones that are there cannot assert absence — and a sheet that cannot say "not
+present" is useless for reviewing a contract.
 
-| | |
-|---|---|
-| `localizador.py` + reglas | 4 categorías tipadas: título, partes, fechas, ley aplicable |
-| `recuperacion.py` | 6 categorías de presencia, por términos discriminantes aprendidos |
+Two categories were dropped by the last condition alone. *Warranty Duration* and
+*No-Solicit of Employees* had balanced accuracy of 76% and 75.6% and passed the
+first two rules, but answering "not present" every time scores 83% and 90% on
+those two. The product lost by 7 and 10 points.
 
-El reparto no fue una corazonada. Salió de medir cada categoría en las dos
-mitades del problema — **localizar** la cláusula y **normalizar** el valor — y
-quedarse con el motor que ganó en cada una.
+`python scope.py` prints all 41 with their numbers, in and out, so the decision can
+be argued with rather than taken on faith.
 
-Un ejemplo de por qué importa: *Governing Law* vive en el 84% de profundidad
-del contrato, y un lector que trunca a 8,000 caracteres la ve en el 8% de los
-casos. Una expresión regular que recorre el documento entero la resuelve al
-90%. *Parties*, que parecía la más fácil porque está en el primer párrafo, se
-midió al 5.8% y quedó fuera: ahí es donde un modelo se gana su hora.
-
-## Reglas de medición
-
-Están cableadas en el código, no son buenas intenciones:
-
-1. **Nada de exactitud promediada entre categorías.** Un detector que siempre
-   responde "no está" saca 79.7% en este corpus. `piso_trivial.py` calcula, por
-   categoría, el piso que hay que superar para que el número signifique algo.
-2. **El corte train/val/test es por contrato, nunca por pregunta.** Cada
-   contrato se pregunta 41 veces; partir preguntas al azar pondría el mismo
-   texto de los dos lados de la línea.
-3. **Los empates de términos se rompen por el término.** Python aleatoriza el
-   hash de cadenas por proceso: sin esto el corte del top-40 cae distinto en
-   cada corrida y el proyecto imprime un número diferente cada vez.
-4. **Una categoría sin positivos suficientes para calibrar no se publica.** Se
-   marca como no calibrable y va a revisión humana.
-
-## Alcance y límites
-
-No es asesoría legal. Localiza cláusulas y señala ausencias para que una
-persona las lea. El corpus es de contratos comerciales en inglés bajo derecho
-estadounidense; llevarlo a contratos en español es otro proyecto.
-
-El salto al documento solo se ofrece cuando la ubicación acertó ≥50% en
-prueba. Hoy casi ninguna categoría de presencia llega: el sistema dice si la
-cláusula está, no dónde. Esa es la siguiente pieza.
-
-## Archivos
+## Two engines
 
 | | |
 |---|---|
-| `ficha.py` | el producto: contrato → ficha de 10 renglones |
-| `alcance.py` | qué entra y qué no, con el criterio y los números |
-| `localizador.py` | encuentra la cláusula en el contrato crudo |
-| `recuperacion.py` | aprende términos, calibra umbrales, evalúa |
-| `presencia.py` | aplica lo aprendido, con las reglas de honestidad |
-| `medir_ficha.py` | mide la ficha completa, renglón por renglón |
-| `medir_e2e.py` | mide localización + normalización |
-| `medir_reglas.py` | mide solo normalización |
-| `piso_trivial.py` | el piso que cada categoría debe superar |
+| `locator.py` + rules | 4 typed categories: title, dates, governing law |
+| `retrieval.py` | 4 presence categories, via learned discriminative terms |
+
+The split was not a hunch. Each category was measured on both halves of the problem
+— **locating** the clause and **normalizing** the value — and assigned to whichever
+engine won.
+
+*Governing Law* sits at the 84% depth mark of the median contract. A reader that
+truncates to 8,000 characters sees it in 8% of cases; a regular expression that
+scans the whole document resolves it at 90%. *Parties*, which looked easiest
+because it sits in the opening paragraph, measured 5.8% end-to-end and was dropped:
+that is where a model earns its hour.
+
+## Measurement rules
+
+These are wired into the code, not good intentions:
+
+1. **No accuracy averaged across categories.** A detector that always answers "not
+   present" scores 79.7% on this corpus. `trivial_floor.py` computes, per category,
+   the floor a result has to clear before it means anything.
+2. **The train/val/test split is by contract, never by question.** Every contract is
+   asked all 41 questions; splitting questions at random would put the same text on
+   both sides of the line.
+3. **Term ties are broken on the term itself.** Python randomizes string hashing per
+   process; without this the top-40 cutoff lands differently on every run and the
+   project prints a different number each time.
+4. **A category without enough positives to calibrate is not published.** It is
+   marked uncalibratable and routed to human review.
+
+## Scope and limits
+
+This is not legal advice. It locates clauses and flags absences so a person can read
+them; it does not judge whether a clause is favourable.
+
+A perfect sheet is rare: 16% come out with no errors at all. Six or seven correct
+rows out of eight is the normal case.
+
+For rule-based categories the sheet jumps to the exact paragraph. For presence
+categories it shows the highest-scoring passage with no guarantee it is the clause —
+location accuracy runs between 12% and 46% on the held-out split.
+
+The corpus is commercial contracts in English under US law. Porting this to Spanish
+contracts is a different project.
+
+## Getting the corpus
+
+The corpus is not in this repository (27 MB). Download CUAD v1 from
+[Zenodo](https://zenodo.org/records/4595826), then build `contracts.json` as a map
+from contract name to its full text:
+
+```python
+import json, pathlib
+src = pathlib.Path("CUAD_v1/full_contract_txt")
+out = {p.stem: p.read_text(encoding="utf-8", errors="replace") for p in src.glob("*.txt")}
+pathlib.Path("contracts.json").write_text(json.dumps(out, ensure_ascii=False))
+```
+
+`master_clauses.csv`, the attorney answers used for every measurement here, is
+included: CUAD is CC BY 4.0.
+
+## Files
+
+| | |
+|---|---|
+| `ficha.py` | the product: contract in, eight-row sheet out |
+| `scope.py` | what is in and what is out, with the criterion and the numbers |
+| `locator.py` | finds the clause inside the raw contract |
+| `retrieval.py` | learns terms, calibrates thresholds, evaluates |
+| `presence.py` | applies what was learned, with the honesty rules |
+| `build_page.py` | rebuilds the demo page from a chosen set of contracts |
+| `measure_sheet.py` | measures the whole sheet, row by row |
+| `measure_e2e.py` | measures locating plus normalizing |
+| `measure_rules.py` | measures normalizing alone |
+| `trivial_floor.py` | the floor each category has to clear |
+| `baseline_naive.py` | the parse that comes for free, as a comparison |

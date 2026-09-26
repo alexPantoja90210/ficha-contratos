@@ -1,0 +1,42 @@
+category,cuad_format,cuad_group,bucket,closes_alone
+Document Name,Contract Name,-,regla,True
+Parties,Entity or individual names,-,modelo,True
+Agreement Date,Date (mm/dd/yyyy),1,regla,True
+Effective Date,Date (mm/dd/yyyy),1,regla,True
+Expiration Date,Date (mm/dd/yyyy) / Perpetual,1,humano,False
+Renewal Term,[Successive] number of years/months / Perpetual,1,humano,False
+Notice Period to Terminate Renewal,Number of days/months/year(s),1,hibrido,True
+Governing Law,"Name of a US State / non-US Province, Country",-,regla,True
+Most Favored Nation,Yes/No,-,humano,False
+Non-Compete,Yes/No,2,humano,False
+Exclusivity,Yes/No,2,humano,False
+No-Solicit of Customers,Yes/No,2,retrieval,True
+Competitive Restriction Exception,Yes/No,2,retrieval,True
+No-Solicit of Employees,Yes/No,-,retrieval,True
+Non-Disparagement,Yes/No,-,retrieval,True
+Termination for Convenience,Yes/No,-,retrieval,True
+Rofr/Rofo/Rofn,Yes/No,-,retrieval,True
+Change of Control,Yes/No,3,humano,False
+Anti-Assignment,Yes/No,3,humano,False
+Revenue/Profit Sharing,Yes/No,-,retrieval,True
+Price Restrictions,Yes/No,-,retrieval,True
+Minimum Commitment,Yes/No,-,humano,False
+Volume Restriction,Yes/No,-,retrieval,True
+IP Ownership Assignment,Yes/No,-,humano,False
+Joint IP Ownership,Yes/No,-,humano,False
+License Grant,Yes/No,4,retrieval,True
+Non-Transferable License,Yes/No,4,retrieval,True
+Affiliate License-Licensor,Yes/No,4,retrieval,True
+Affiliate License-Licensee,,4,retrieval,True
+Unlimited/All-You-Can-Eat-License,Yes/No,4,retrieval,True
+Irrevocable or Perpetual License,Yes/No,4,retrieval,True
+Source Code Escrow,Yes/No,-,humano,False
+Post-Termination Services,Yes/No,5,retrieval,True
+Audit Rights,Yes/No,5,retrieval,True
+Uncapped Liability,Yes/No,6,humano,False
+Cap on Liability,Yes/No,6,humano,False
+Liquidated Damages,Yes/No,-,humano,False
+Warranty Duration,Number of months or years,-,retrieval,True
+Insurance,Yes/No,-,retrieval,True
+Covenant Not to Sue,Yes/No,-,retrieval,True
+Third Party Beneficiary,Yes/No,-,retrieval,True

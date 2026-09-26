@@ -1,0 +1,364 @@
+[
+  {
+    "category": "Document Name",
+    "description": "The name of the contract",
+    "cuad_format": "Contract Name",
+    "cuad_group": "-",
+    "bucket": "regla",
+    "closes_alone": true,
+    "where": "Primeros 2000 caracteres",
+    "pattern": "(?im)^\\s*([A-Z][A-Z \\-&']{6,})\\s*$|\\b([A-Z][\\w ]*?AGREEMENT)\\b",
+    "validates": "cadena no vacia",
+    "measured_pct": 97.6,
+    "measured_of": 510
+  },
+  {
+    "category": "Parties",
+    "description": "The two or more parties who signed the contract",
+    "cuad_format": "Entity or individual names",
+    "cuad_group": "-",
+    "bucket": "modelo",
+    "closes_alone": true,
+    "note": "Las entidades vienen enredadas con domicilios, descriptores societarios y alias. Regla: 3.6% de punta a punta. Un modelo leyendo la primera pagina resuelve esto sin esfuerzo.",
+    "measured_pct": 3.6,
+    "measured_of": 497
+  },
+  {
+    "category": "Agreement Date",
+    "description": "The date of the contract",
+    "cuad_format": "Date (mm/dd/yyyy)",
+    "cuad_group": "1",
+    "bucket": "regla",
+    "closes_alone": true,
+    "where": "Parrafo inicial",
+    "pattern": "(?i)\\bdated(?:\\s+as\\s+of)?\\s+(.{0,40}?\\d{4})",
+    "validates": "fecha parseable",
+    "measured_pct": 85.5,
+    "measured_of": 463
+  },
+  {
+    "category": "Effective Date",
+    "description": "The date when the contract is effective",
+    "cuad_format": "Date (mm/dd/yyyy)",
+    "cuad_group": "1",
+    "bucket": "regla",
+    "closes_alone": true,
+    "where": "Parrafo inicial o definiciones",
+    "pattern": "(?i)\\beffective\\s+(?:date|as\\s+of)\\b[^.]{0,60}?((?:\\d{1,2}/\\d{1,2}/\\d{2,4})|(?:[A-Z][a-z]+\\s+\\d{1,2},?\\s+\\d{4}))",
+    "validates": "fecha parseable",
+    "measured_pct": 82.6,
+    "measured_of": 357
+  },
+  {
+    "category": "Expiration Date",
+    "description": "On what date will the contract's initial term expire?",
+    "cuad_format": "Date (mm/dd/yyyy) / Perpetual",
+    "cuad_group": "1",
+    "bucket": "humano",
+    "closes_alone": false,
+    "note": "No esta escrita: se calcula sobre Effective Date + term_in del termino. El error se acumula sobre Effective Date (82.6%).",
+    "measured_pct": 34.4,
+    "measured_of": 326
+  },
+  {
+    "category": "Renewal Term",
+    "description": "What is the renewal term after the initial term expires? This includes automatic extensions and unilateral extensions with prior notice.",
+    "cuad_format": "[Successive] number of years/months / Perpetual",
+    "cuad_group": "1",
+    "bucket": "humano",
+    "closes_alone": false,
+    "note": "Respuestas multivaluadas ('perpetual', '7/22/2019; 7/22/2022') y plazos que compiten inside del mismo parrafo.",
+    "measured_pct": 61.3,
+    "measured_of": 163
+  },
+  {
+    "category": "Notice Period to Terminate Renewal",
+    "description": "What is the notice period required to terminate renewal?",
+    "cuad_format": "Number of days/months/year(s)",
+    "cuad_group": "1",
+    "bucket": "hibrido",
+    "closes_alone": true,
+    "locates": "clausula de terminacion de la renovacion",
+    "normalizes": "term_in mas cercano a 'notice'/'non-renewal', unidad dias",
+    "validates": "numero + unidad",
+    "measured_pct": 87.0,
+    "measured_of": 100
+  },
+  {
+    "category": "Governing Law",
+    "description": "Which state/country's law governs the interpretation of the contract?",
+    "cuad_format": "Name of a US State / non-US Province, Country",
+    "cuad_group": "-",
+    "bucket": "regla",
+    "closes_alone": true,
+    "where": "Clausula de ley aplicable",
+    "pattern": "(?i)govern(?:ed|ing)\\s+(?:by|law).{0,120}?\\b(?:State|Commonwealth|Province|laws)\\s+of\\s+([A-Z][\\w ]+)",
+    "validates": "value inside del catalogo de estados/paises",
+    "measured_pct": 95.1,
+    "measured_of": 432
+  },
+  {
+    "category": "Most Favored Nation",
+    "description": "Is there a clause that if a third party gets better terms on the licensing or sale of technology/goods/services described in the contract, the buyer of such technology/goods/services under the contract shall be entitled to those better terms?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "-",
+    "bucket": "humano",
+    "closes_alone": false
+  },
+  {
+    "category": "Non-Compete",
+    "description": "Is there a restriction on the ability of a party to compete with the counterparty or operate in a certain geography or business or technology sector?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "2",
+    "bucket": "humano",
+    "closes_alone": false
+  },
+  {
+    "category": "Exclusivity",
+    "description": "Is there an exclusive dealing  commitment with the counterparty? This includes a commitment to procure all “requirements” from one party of certain technology, goods, or services or a prohibition on licensing or selling technology, goods or services to third parties, or a prohibition on  collaborating or working with other parties), whether during the contract or  after the contract ends (or both).",
+    "cuad_format": "Yes/No",
+    "cuad_group": "2",
+    "bucket": "humano",
+    "closes_alone": false
+  },
+  {
+    "category": "No-Solicit of Customers",
+    "description": "Is a party restricted from contracting or soliciting customers or partners of the counterparty, whether during the contract or after the contract ends (or both)?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "2",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "Competitive Restriction Exception",
+    "description": "This category includes the exceptions or carveouts to Non-Compete, Exclusivity and No-Solicit of Customers above.",
+    "cuad_format": "Yes/No",
+    "cuad_group": "2",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "No-Solicit of Employees",
+    "description": "Is there a restriction on a party’s soliciting or hiring employees and/or contractors from the  counterparty, whether during the contract or after the contract ends (or both)?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "-",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "Non-Disparagement",
+    "description": "Is there a requirement on a party not to disparage the counterparty?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "-",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "Termination for Convenience",
+    "description": "Can a party terminate this  contract without cause (solely by giving a notice and allowing a waiting  period to expire)?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "-",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "Rofr/Rofo/Rofn",
+    "description": "Is there a clause granting one party a right of first refusal, right of first offer or right of first negotiation to purchase, license, market, or distribute equity interest, technology, assets, products or services?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "-",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "Change of Control",
+    "description": "Does one party have the right to terminate or is consent or notice required of the counterparty if such party undergoes a change of control, such as a merger, stock sale, transfer of all or substantially all of its assets or business, or assignment by operation of law?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "3",
+    "bucket": "humano",
+    "closes_alone": false
+  },
+  {
+    "category": "Anti-Assignment",
+    "description": "Is consent or notice required of a party if the contract is assigned to a third party?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "3",
+    "bucket": "humano",
+    "closes_alone": false
+  },
+  {
+    "category": "Revenue/Profit Sharing",
+    "description": "Is one party required to share revenue or profit with the counterparty for any technology, goods, or services?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "-",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "Price Restrictions",
+    "description": "Is there a restriction on the  ability of a party to raise or reduce prices of technology, goods, or  services provided?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "-",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "Minimum Commitment",
+    "description": "Is there a minimum order size or minimum amount or units per-time period that one party must buy from the counterparty under the contract?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "-",
+    "bucket": "humano",
+    "closes_alone": false
+  },
+  {
+    "category": "Volume Restriction",
+    "description": "Is there a fee increase or consent requirement, etc. if one party’s use of the product/services exceeds certain threshold?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "-",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "IP Ownership Assignment",
+    "description": "Does intellectual property created  by one party become the property of the counterparty, either per the terms of the contract or upon the occurrence of certain events?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "-",
+    "bucket": "humano",
+    "closes_alone": false
+  },
+  {
+    "category": "Joint IP Ownership",
+    "description": "Is there any clause providing for joint or shared ownership of intellectual property between the parties to the contract?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "-",
+    "bucket": "humano",
+    "closes_alone": false
+  },
+  {
+    "category": "License Grant",
+    "description": "Does the contract contain a license granted by one party to its counterparty?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "4",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "Non-Transferable License",
+    "description": "Does the contract limit the ability of a party to transfer the license being granted to a third party?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "4",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "Affiliate License-Licensor",
+    "description": "Does the contract contain a license grant by affiliates of the licensor or that includes intellectual property of affiliates of the licensor?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "4",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "Affiliate License-Licensee",
+    "description": "Does the contract contain a license grant to a licensee (incl. sublicensor) and the affiliates of such licensee/sublicensor?",
+    "cuad_format": null,
+    "cuad_group": "4",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "Unlimited/All-You-Can-Eat-License",
+    "description": "Is there a clause granting one party an “enterprise,” “all you can eat” or unlimited usage license?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "4",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "Irrevocable or Perpetual License",
+    "description": "Does the contract contain a  license grant that is irrevocable or perpetual?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "4",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "Source Code Escrow",
+    "description": "Is one party required to deposit its source code into escrow with a third party, which can be released to the counterparty upon the occurrence of certain events (bankruptcy,  insolvency, etc.)?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "-",
+    "bucket": "humano",
+    "closes_alone": false
+  },
+  {
+    "category": "Post-Termination Services",
+    "description": "Is a party subject to obligations after the termination or expiration of a contract, including any post-termination transition, payment, transfer of IP, wind-down, last-buy, or similar commitments?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "5",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "Audit Rights",
+    "description": "Does a party have the right to  audit the books, records, or physical locations of the counterparty to ensure compliance with the contract?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "5",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "Uncapped Liability",
+    "description": "Is a party’s liability uncapped upon the breach of its obligation in the contract? This also includes uncap liability for a particular type of breach such as IP infringement or breach of confidentiality obligation.",
+    "cuad_format": "Yes/No",
+    "cuad_group": "6",
+    "bucket": "humano",
+    "closes_alone": false
+  },
+  {
+    "category": "Cap on Liability",
+    "description": "Does the contract include a cap on liability upon the breach of a party’s obligation? This includes time limitation for the counterparty to bring claims or maximum amount for recovery.",
+    "cuad_format": "Yes/No",
+    "cuad_group": "6",
+    "bucket": "humano",
+    "closes_alone": false
+  },
+  {
+    "category": "Liquidated Damages",
+    "description": "Does the contract contain a clause that would award either party liquidated damages for breach or a fee upon the termination of a contract (termination fee)?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "-",
+    "bucket": "humano",
+    "closes_alone": false
+  },
+  {
+    "category": "Warranty Duration",
+    "description": "What is the duration of any  warranty against defects or errors in technology, products, or services  provided under the contract?",
+    "cuad_format": "Number of months or years",
+    "cuad_group": "-",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "Insurance",
+    "description": "Is there a requirement for insurance that must be maintained by one party for the benefit of the counterparty?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "-",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "Covenant Not to Sue",
+    "description": "Is a party restricted from contesting the validity of the counterparty’s ownership of intellectual property or otherwise bringing a claim against the counterparty for matters unrelated to the contract?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "-",
+    "bucket": "retrieval",
+    "closes_alone": true
+  },
+  {
+    "category": "Third Party Beneficiary",
+    "description": "Is there a non-contracting party who is a beneficiary to some or all of the clauses in the contract and therefore can enforce its rights against a contracting party?",
+    "cuad_format": "Yes/No",
+    "cuad_group": "-",
+    "bucket": "retrieval",
+    "closes_alone": true
+  }
+]
