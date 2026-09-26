@@ -22,6 +22,18 @@ Usage:  python sheet.py contracts.json [index]
 import json, sys
 from pathlib import Path
 
+HERE = Path(__file__).resolve().parent
+# Same search as build_page.py: the corpus lives outside the repository.
+CORPUS_CANDIDATES = [Path("contracts.json"), HERE / "contracts.json",
+                     HERE.parent / "cuad" / "contracts.json",
+                     Path("C:/dev/cuad/contracts.json")]
+
+def default_corpus():
+    for c in CORPUS_CANDIDATES:
+        if c.is_file():
+            return str(c)
+    return None
+
 import measure_rules as R
 from locator import TextLocator, key_of
 from text_rules import parties_from_text
@@ -142,5 +154,7 @@ def main(path, indice=0):
     return f
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else "contracts.json",
-         sys.argv[2] if len(sys.argv) > 2 else 0)
+    path = sys.argv[1] if len(sys.argv) > 1 else default_corpus()
+    if not path:
+        sys.exit("contracts.json not found. Pass its path, or rebuild it (see README).")
+    main(path, sys.argv[2] if len(sys.argv) > 2 else 0)

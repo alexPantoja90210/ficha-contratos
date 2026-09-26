@@ -1,4 +1,4 @@
-categoria,si,no,total,piso_trivial_pct,clase_mayoritaria,metrica_valida,confirmaciones_humanas
+category,si,no,total,trivial_floor_pct,majority_class,valid_metric,human_confirmations
 Source Code Escrow,13,497,510,97.5,No,recall_clase_minoritaria,13
 Price Restrictions,15,495,510,97.1,No,recall_clase_minoritaria,15
 Unlimited/All-You-Can-Eat-License,17,493,510,96.7,No,recall_clase_minoritaria,17
@@ -26,9 +26,9 @@ Non-Transferable License,138,372,510,72.9,No,recall_clase_minoritaria,138
 Minimum Commitment,165,345,510,67.6,No,recall_clase_minoritaria,165
 Revenue/Profit Sharing,166,344,510,67.5,No,recall_clase_minoritaria,166
 Insurance,167,343,510,67.3,No,recall_clase_minoritaria,167
-Exclusivity,180,330,510,64.7,No,exactitud,180
-Post-Termination Services,182,328,510,64.3,No,exactitud,182
-Termination For Convenience,183,327,510,64.1,No,exactitud,183
-Audit Rights,214,296,510,58.0,No,exactitud,214
-Cap On Liability,275,235,510,53.9,Yes,exactitud,235
-License Grant,255,255,510,50.0,Yes,exactitud,255
+Exclusivity,180,330,510,64.7,No,accuracy,180
+Post-Termination Services,182,328,510,64.3,No,accuracy,182
+Termination For Convenience,183,327,510,64.1,No,accuracy,183
+Audit Rights,214,296,510,58.0,No,accuracy,214
+Cap On Liability,275,235,510,53.9,Yes,accuracy,235
+License Grant,255,255,510,50.0,Yes,accuracy,255

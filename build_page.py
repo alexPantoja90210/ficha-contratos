@@ -216,7 +216,7 @@ def main():
     for c in data:
         m = sum(1 for e in c["rows"] if e["span_range"])
         p = sum(1 for e in c["rows"] if e["passage"])
-        print(f"  {c['name'][:62]:64} {m} marcas, {p} pasajes")
+        print(f"  {c['name'][:62]:64} {m} highlights, {p} passages")
     abs_path = Path(a.out).resolve()
     print(f"\n{stamp}")
     print(f"{abs_path}  ({abs_path.stat().st_size//1024} KB)")
