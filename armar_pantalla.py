@@ -14,7 +14,7 @@ Un contrato se nombra por su indice (orden alfabetico del corpus) o por
 cualquier trozo de su nombre, siempre que ese trozo identifique a uno solo.
 Despues de correr esto, hay que publicar `revisor.html`.
 """
-import argparse, json, os, re, sys
+import argparse, datetime, json, os, re, sys
 from pathlib import Path
 
 # El proyecto lee sus datos con rutas relativas (categorias_cubetas.json,
@@ -196,7 +196,13 @@ def main():
     fuera_out = [dict(categoria=f["categoria"], motor=f["motor"],
                       medida=f["medida"], recall=f.get("recall")) for f in fuera]
 
+    # Sello: la pagina dice de que construccion viene. Sin esto no hay forma
+    # de saber si lo publicado corresponde a lo ultimo que se armo.
+    hoy = datetime.date.today().isoformat()
+    sello = f"Armada el {hoy} · {len(datos)} contrato" + ("s" if len(datos) != 1 else "")
+
     html = Path(a.plantilla).read_text(encoding="utf-8")
+    html = html.replace("__SELLO__", sello)
     for marca, valor in (("__DATOS__", datos), ("__EVID__", evid), ("__FUERA__", fuera_out)):
         if marca not in html:
             sys.exit(f"la plantilla no tiene {marca}")
@@ -208,7 +214,12 @@ def main():
         m = sum(1 for e in c["entradas"] if e["rango"])
         p = sum(1 for e in c["entradas"] if e["pasaje"])
         print(f"  {c['nombre'][:62]:64} {m} marcas, {p} pasajes")
-    print(f"\n{a.salida}  ({Path(a.salida).stat().st_size//1024} KB) — falta publicarlo")
+    ruta_abs = Path(a.salida).resolve()
+    print(f"\n{sello}")
+    print(f"{ruta_abs}  ({ruta_abs.stat().st_size//1024} KB)")
+    print("\nEsta es la salida final. Para que el enlace publicado la muestre,")
+    print("pidele a Claude que publique revisor.html: el archivo vive en tu disco,")
+    print("la publicacion pasa por el.")
 
 if __name__ == "__main__":
     main()
