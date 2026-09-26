@@ -1,0 +1,34 @@
+categoria,si,no,total,piso_trivial_pct,clase_mayoritaria,metrica_valida,confirmaciones_humanas
+Source Code Escrow,13,497,510,97.5,No,recall_clase_minoritaria,13
+Price Restrictions,15,495,510,97.1,No,recall_clase_minoritaria,15
+Unlimited/All-You-Can-Eat-License,17,493,510,96.7,No,recall_clase_minoritaria,17
+Affiliate License-Licensor,23,487,510,95.5,No,recall_clase_minoritaria,23
+Most Favored Nation,28,482,510,94.5,No,recall_clase_minoritaria,28
+Third Party Beneficiary,33,477,510,93.5,No,recall_clase_minoritaria,33
+No-Solicit Of Customers,34,476,510,93.3,No,recall_clase_minoritaria,34
+Non-Disparagement,38,472,510,92.5,No,recall_clase_minoritaria,38
+Joint Ip Ownership,46,464,510,91.0,No,recall_clase_minoritaria,46
+No-Solicit Of Employees,59,451,510,88.4,No,recall_clase_minoritaria,59
+Affiliate License-Licensee,59,451,510,88.4,No,recall_clase_minoritaria,59
+Liquidated Damages,61,449,510,88.0,No,recall_clase_minoritaria,61
+Irrevocable Or Perpetual License,70,440,510,86.3,No,recall_clase_minoritaria,70
+Warranty Duration,75,435,510,85.3,No,recall_clase_minoritaria,75
+Competitive Restriction Exception,76,434,510,85.1,No,recall_clase_minoritaria,76
+Volume Restriction,82,428,510,83.9,No,recall_clase_minoritaria,82
+Rofr/Rofo/Rofn,85,425,510,83.3,No,recall_clase_minoritaria,85
+Covenant Not To Sue,100,410,510,80.4,No,recall_clase_minoritaria,100
+Uncapped Liability,111,399,510,78.2,No,recall_clase_minoritaria,111
+Non-Compete,119,391,510,76.7,No,recall_clase_minoritaria,119
+Change Of Control,121,389,510,76.3,No,recall_clase_minoritaria,121
+Ip Ownership Assignment,124,386,510,75.7,No,recall_clase_minoritaria,124
+Anti-Assignment,374,136,510,73.3,Yes,recall_clase_minoritaria,136
+Non-Transferable License,138,372,510,72.9,No,recall_clase_minoritaria,138
+Minimum Commitment,165,345,510,67.6,No,recall_clase_minoritaria,165
+Revenue/Profit Sharing,166,344,510,67.5,No,recall_clase_minoritaria,166
+Insurance,167,343,510,67.3,No,recall_clase_minoritaria,167
+Exclusivity,180,330,510,64.7,No,exactitud,180
+Post-Termination Services,182,328,510,64.3,No,exactitud,182
+Termination For Convenience,183,327,510,64.1,No,exactitud,183
+Audit Rights,214,296,510,58.0,No,exactitud,214
+Cap On Liability,275,235,510,53.9,Yes,exactitud,235
+License Grant,255,255,510,50.0,Yes,exactitud,255

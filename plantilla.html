@@ -1,0 +1,384 @@
+<title>Revisor de contratos</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@400;600&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --paper:#FBFBFD; --surface:#FFFFFF; --surface-2:#F4F6FA;
+  --ink:#171A21; --ink-2:#5A6474; --ink-3:#8A93A3;
+  --line:#E2E5EC; --line-2:#CED4DE;
+  --accent:#2F4E9E; --accent-soft:#E8EDF9;
+  --mark:#FCE7A2; --mark-edge:#D9A824;
+  --ok:#1A7A4C; --warn:#A75E12; --absent:#7A8497;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --paper:#0F1216; --surface:#161A20; --surface-2:#1C222B;
+    --ink:#E7EAF0; --ink-2:#9BA5B5; --ink-3:#6E7889;
+    --line:#252B35; --line-2:#333B47;
+    --accent:#83A4E8; --accent-soft:#1B2740;
+    --mark:#5E5019; --mark-edge:#B08E21;
+    --ok:#46A877; --warn:#CC8B37; --absent:#788294;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --paper:#0F1216; --surface:#161A20; --surface-2:#1C222B;
+  --ink:#E7EAF0; --ink-2:#9BA5B5; --ink-3:#6E7889;
+  --line:#252B35; --line-2:#333B47;
+  --accent:#83A4E8; --accent-soft:#1B2740;
+  --mark:#5E5019; --mark-edge:#B08E21;
+  --ok:#46A877; --warn:#CC8B37; --absent:#788294;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+     font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px;padding-block:32px 56px}
+h1{font-size:clamp(26px,4.2vw,38px);line-height:1.15;margin:0;font-weight:600;
+   letter-spacing:-.02em;text-wrap:balance}
+h2{font-size:19px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em}
+p{margin:0}
+.lede{color:var(--ink-2);max-width:62ch;margin-top:10px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+         text-transform:uppercase;color:var(--ink-3)}
+
+header{display:flex;flex-direction:column;gap:6px;
+       border-bottom:1px solid var(--line);padding-bottom:22px}
+.facts{display:flex;flex-wrap:wrap;gap:8px 28px;margin-top:18px}
+.fact{display:flex;flex-direction:column;gap:1px}
+.fact b{font-family:var(--mono);font-size:22px;font-weight:500;
+        font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.fact span{font-size:12px;color:var(--ink-2)}
+
+section{margin-top:40px}
+.sechead{display:flex;flex-direction:column;gap:2px;margin-bottom:14px}
+.sechead p{color:var(--ink-2);font-size:14px;max-width:70ch}
+
+.picker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.picker button{font:inherit;font-size:12.5px;font-family:var(--mono);
+  background:var(--surface);color:var(--ink-2);border:1px solid var(--line-2);
+  border-radius:3px;padding:7px 11px;cursor:pointer;text-align:left;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.picker button:hover{border-color:var(--accent);color:var(--ink)}
+.picker button[aria-pressed="true"]{background:var(--accent-soft);
+  border-color:var(--accent);color:var(--ink)}
+.picker button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.split{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);
+       gap:16px;align-items:start}
+@media(max-width:860px){.split{grid-template-columns:1fr}}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:4px;
+       overflow:hidden}
+.panel-head{display:flex;justify-content:space-between;align-items:baseline;
+  gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);
+  background:var(--surface-2)}
+.panel-head .eyebrow{color:var(--ink-2)}
+
+#doc{height:min(66vh,620px);overflow-y:auto;padding:18px 20px;
+     font-family:var(--serif);font-size:14px;line-height:1.72;
+     white-space:pre-wrap;word-break:break-word;color:var(--ink-2)}
+#doc mark{background:var(--mark);color:var(--ink);
+  box-shadow:inset 0 -1.5px 0 var(--mark-edge);border-radius:2px;padding:0 1px}
+#doc mark.on{outline:2px solid var(--accent);outline-offset:1px}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+#ficha tbody tr{border-top:1px solid var(--line)}
+#ficha tbody tr:first-child{border-top:0}
+#ficha td{padding:9px 12px;vertical-align:top}
+#ficha tr.click{cursor:pointer}
+#ficha tr.click:hover{background:var(--accent-soft)}
+.cat{font-weight:500}
+.val{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);
+     display:block;margin-top:1px;word-break:break-word}
+.chip{display:inline-block;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:2px;
+  border:1px solid currentColor;white-space:nowrap}
+.chip.ok{color:var(--ok)} .chip.rev{color:var(--warn)} .chip.no{color:var(--absent)}
+.conf{font-family:var(--mono);font-size:12px;color:var(--ink-3);
+      font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.jump{font-family:var(--mono);font-size:11px;color:var(--accent)}
+.meta{font-family:var(--mono);font-size:11px;color:var(--ink-3);
+  display:block;margin-top:3px;font-variant-numeric:tabular-nums}
+.meta b{font-weight:500;color:var(--ok)}
+.pasaje{margin-top:7px;padding:8px 10px;background:var(--surface-2);
+  border-left:2px solid var(--line-2);border-radius:0 3px 3px 0;
+  font-family:var(--serif);font-size:12.5px;line-height:1.6;color:var(--ink-2)}
+.pasaje em{display:block;font-family:var(--mono);font-size:10px;font-style:normal;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:5px}
+.toggle{font-family:var(--mono);font-size:11px;color:var(--accent);
+  background:none;border:0;padding:0;cursor:pointer}
+.toggle:hover{text-decoration:underline}
+.foot{padding:10px 14px;border-top:1px solid var(--line);background:var(--surface-2);
+  font-size:12.5px;color:var(--ink-2)}
+
+.bars{display:flex;flex-direction:column;gap:9px;margin-top:6px}
+.bar{display:grid;grid-template-columns:minmax(120px,1.1fr) minmax(0,3fr) auto;
+     gap:10px;align-items:center;font-size:13px}
+@media(max-width:560px){.bar{grid-template-columns:1fr;gap:3px}}
+.bar .nm{color:var(--ink-2)}
+.track{position:relative;height:16px;background:var(--surface-2);
+       border:1px solid var(--line);border-radius:3px}
+.fill{position:absolute;inset:1px auto 1px 1px;background:var(--accent);
+      border-radius:2px 4px 4px 2px}
+.naive{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink-3)}
+.naive::after{content:"";position:absolute;inset:0;box-shadow:0 0 0 1px var(--surface)}
+.bar .pc{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.axis{display:flex;justify-content:space-between;font-family:var(--mono);
+      font-size:10.5px;color:var(--ink-3);margin-top:8px;
+      padding-left:calc(min(120px,30%) + 10px)}
+@media(max-width:560px){.axis{padding-left:0}}
+.key{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:var(--ink-2);margin-top:12px}
+.key i{display:inline-block;width:10px;height:10px;vertical-align:-1px;margin-right:6px;
+  border-radius:2px;background:var(--accent);font-style:normal}
+.key i.t{width:2px;height:13px;border-radius:0;background:var(--ink-3)}
+
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:15px 16px}
+.card h3{margin:0 0 6px;font-size:14px;font-weight:600}
+.card p{font-size:13.5px;color:var(--ink-2)}
+.crit{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);margin-top:8px;
+      padding-left:12px;border-left:2px solid var(--line-2)}
+.out{overflow-x:auto;margin-top:10px}
+.out table{font-size:12.5px;font-family:var(--mono)}
+.out th{text-align:left;font-weight:500;color:var(--ink-3);padding:5px 14px 5px 0;
+  border-bottom:1px solid var(--line);font-family:var(--sans);font-size:11px;
+  letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.out td{padding:4px 14px 4px 0;color:var(--ink-2);
+        font-variant-numeric:tabular-nums;white-space:nowrap}
+.out td:first-child{color:var(--ink);font-family:var(--sans);white-space:normal}
+footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--ink-3);display:flex;flex-wrap:wrap;gap:6px 20px}
+a{color:var(--accent)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Ficha de cláusulas · CUAD</p>
+  <h1>Ocho cláusulas, y lo que cuesta cada una</h1>
+  <p class="lede">Lee un contrato en texto y devuelve qué dice cada cláusula clave, cuáles no aparecen,
+  y con qué confianza se afirma cada renglón. Cada uno se compara contra el parseo obvio: la primera línea,
+  la primera fecha, el primer estado nombrado.</p>
+  <div class="facts">
+    <div class="fact"><b>76.3%</b><span>renglones correctos</span></div>
+    <div class="fact"><b>101</b><span>contratos nunca vistos</span></div>
+    <div class="fact"><b>+23</b><span>puntos sobre el parseo ingenuo</span></div>
+    <div class="fact"><b>8 de 41</b><span>cláusulas en el alcance</span></div>
+  </div>
+</header>
+
+<section>
+  <div class="sechead">
+    <h2>La ficha</h2>
+    <p>Tres contratos reales de la partición de prueba, exhibits presentados ante la SEC. Cada renglón
+    dice a qué profundidad del documento apareció la cláusula y qué saca ahí el parseo ingenuo. Los
+    resueltos por regla saltan al párrafo; los de presencia muestran el pasaje mejor puntuado.</p>
+  </div>
+  <div class="picker" id="picker"></div>
+  <div class="split">
+    <div class="panel">
+      <div class="panel-head"><span class="eyebrow">Contrato</span><span class="eyebrow" id="docmeta"></span></div>
+      <div id="doc"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><span class="eyebrow">Ficha · 8 cláusulas</span><span class="eyebrow">acierto</span></div>
+      <table id="ficha"><tbody></tbody></table>
+      <div class="foot" id="fichafoot"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sechead">
+    <h2>La evidencia</h2>
+    <p>Acierto por categoría sobre los 101 contratos de prueba. La marca gris es el parseo ingenuo.
+    La distancia entre la marca y el final de la barra es lo único que este trabajo aporta; donde no hay
+    distancia, no aporta nada.</p>
+  </div>
+  <div class="bars" id="bars"></div>
+  <div class="axis"><span>0%</span><span>50%</span><span>100%</span></div>
+  <div class="key">
+    <span><i></i>el producto</span>
+    <span><i class="t"></i>parseo ingenuo: primera línea, primera fecha, primer estado, «no está» siempre</span>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><h2>Por qué ocho y no cuarenta y una</h2></div>
+  <div class="cols">
+    <div class="card">
+      <h3>El criterio se escribió antes de ver los resultados</h3>
+      <p>Una categoría entra solo si puede cerrarse sola con evidencia.</p>
+      <p class="crit">por regla: acierto de punta a punta ≥ 65%<br>por presencia: balanceada ≥ 70% <b>y</b> recall ≥ 70%<br>todas: debe ganarle al parseo ingenuo</p>
+    </div>
+    <div class="card">
+      <h3>Dos categorías se cayeron al medir lo obvio</h3>
+      <p><i>Warranty Duration</i> y <i>No-Solicit of Employees</i> tenían balanceada de 76% y 75.6%, y
+      pasaban el criterio. Pero responder «no está» siempre saca 83% y 90% en esas dos: el producto
+      perdía por 7 y por 10 puntos. Salieron del alcance.</p>
+    </div>
+    <div class="card">
+      <h3>Dos motores, repartidos por medición</h3>
+      <p>Los dos renglones que se ven más triviales son donde el parseo ingenuo se desploma. La primera
+      línea de un contrato casi nunca es el título — es <i>Exhibit 10.4</i>, <i>EXECUTION COPY</i>, un
+      número de página: 5% contra 66%. Y el primer estado nombrado casi nunca es la ley aplicable, sino
+      un domicilio o la constitución en Delaware: 38% contra 90%.</p>
+    </div>
+  </div>
+  <div class="out">
+    <table>
+      <thead><tr><th>Fuera del alcance</th><th>motor</th><th>medida</th><th>recall</th></tr></thead>
+      <tbody id="fuera"></tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><h2>Lo que no hace</h2></div>
+  <div class="cols">
+    <div class="card"><h3>No es asesoría legal</h3><p>Localiza cláusulas y señala ausencias para que una persona las lea. No opina sobre si una cláusula conviene.</p></div>
+    <div class="card"><h3>Una ficha perfecta es rara</h3><p>16% de las fichas salen sin un solo error; 47% tienen 80% o más correcto. Lo normal son seis o siete renglones de ocho.</p></div>
+    <div class="card"><h3>Dice si está, no siempre dónde</h3><p>Las categorías por regla saltan al párrafo exacto. Las de presencia muestran el pasaje que más puntuó, sin garantía de que sea la cláusula: en prueba, la ubicación acierta entre 12% y 46%.</p></div>
+    <div class="card"><h3>Inglés y derecho estadounidense</h3><p>El corpus son 510 contratos comerciales anotados por abogados. Llevarlo a contratos en español es otro proyecto.</p></div>
+  </div>
+</section>
+
+<footer>
+  <span>Corpus: <a href="https://github.com/TheAtticusProject/cuad">CUAD</a>, 510 contratos, CC BY 4.0</span>
+  <span>Partición por contrato, nunca por pregunta</span>
+  <span>Medición reproducible en un comando</span>
+</footer>
+</div>
+
+<script>
+const DATOS = __DATOS__;
+const EVID  = __EVID__;
+const FUERA = __FUERA__;
+
+const esc = s => s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const doc = document.getElementById('doc');
+const tb  = document.querySelector('#ficha tbody');
+let actual = 0;
+
+function pintarDoc(c){
+  const porRango = new Map();
+  c.entradas.filter(e => e.rango).forEach(e => {
+    const k = e.rango[0] + ':' + e.rango[1];
+    if (!porRango.has(k)) porRango.set(k, {a:e.rango[0], b:e.rango[1], cats:[]});
+    porRango.get(k).cats.push(e.categoria);
+  });
+  const rangos = [...porRango.values()].sort((x,y) => x.a - y.a);
+  let out = '', pos = 0, n = 0;
+  for (const r of rangos){
+    if (r.a < pos) continue;
+    out += esc(c.texto.slice(pos, r.a));
+    out += `<mark id="m${n++}" data-cat="${esc(r.cats.join('|'))}">${esc(c.texto.slice(r.a, r.b))}</mark>`;
+    pos = r.b;
+  }
+  out += esc(c.texto.slice(pos));
+  doc.innerHTML = out;
+  doc.scrollTop = 0;
+  document.getElementById('docmeta').textContent =
+    (c.texto.length/1000).toFixed(0) + ' mil caracteres';
+}
+
+const CHIP = {
+  encontrada:['ok','resuelta'], ausente:['no','no aparece'],
+  por_confirmar:['rev','revisar'], ausente_por_confirmar:['rev','confirmar'],
+  pendiente_modelo:['rev','modelo']
+};
+const TEXTO = {
+  ausente:'no aparece en el contrato', por_confirmar:'candidata: la ve una persona',
+  ausente_por_confirmar:'no la veo; confirmar', pendiente_modelo:'la regla perdió'
+};
+
+function pintarFicha(c){
+  tb.innerHTML = '';
+  const orden = {encontrada:0, por_confirmar:1, ausente_por_confirmar:2, ausente:3, pendiente_modelo:4};
+  [...c.entradas].sort((a,b) => (orden[a.estado]-orden[b.estado]) ||
+      a.categoria.localeCompare(b.categoria)).forEach(e => {
+    const [cls, lbl] = CHIP[e.estado] || ['no','—'];
+    const tr = document.createElement('tr');
+    const saltable = !!e.rango;
+    if (saltable){ tr.className = 'click'; tr.tabIndex = 0;
+      tr.addEventListener('click', () => saltar(e.categoria));
+      tr.addEventListener('keydown', ev => { if(ev.key==='Enter') saltar(e.categoria); });
+    }
+    const meta = [];
+    if (e.prof != null) meta.push(`al ${e.prof}% del documento`);
+    if (e.ingenuo != null && e.confianza)
+      meta.push(`ingenuo ${e.ingenuo}% → <b>${e.confianza.toFixed(0)}%</b>`);
+    tr.innerHTML =
+      `<td style="width:1%"><span class="chip ${cls}">${lbl}</span></td>` +
+      `<td><span class="cat">${esc(e.categoria)}</span>` +
+      `<span class="val">${esc(e.valor || TEXTO[e.estado] || '')}` +
+      (saltable ? ' <span class="jump">↗ ver</span>' : '') + `</span>` +
+      (meta.length ? `<span class="meta">${meta.join(' · ')}</span>` : '') +
+      (e.pasaje ? `<button class="toggle" type="button">ver pasaje</button>
+         <div class="pasaje" hidden><em>Pasaje mejor puntuado · la ubicación no está garantizada</em>${esc(e.pasaje)}</div>` : '') +
+      `</td>` +
+      `<td class="conf">${e.confianza ? e.confianza.toFixed(0)+'%' : '—'}</td>`;
+    const bt = tr.querySelector('.toggle');
+    if (bt) bt.addEventListener('click', ev => {
+      ev.stopPropagation();
+      const d = tr.querySelector('.pasaje');
+      d.hidden = !d.hidden;
+      bt.textContent = d.hidden ? 'ver pasaje' : 'ocultar pasaje';
+    });
+    tb.appendChild(tr);
+  });
+  const res = c.entradas.filter(e => e.estado==='encontrada' || e.estado==='ausente').length;
+  document.getElementById('fichafoot').textContent =
+    `${res} de ${c.entradas.length} renglones cierran solos · 27 categorías quedaron fuera del alcance`;
+}
+
+function saltar(cat){
+  const m = [...doc.querySelectorAll('mark')].find(x => x.dataset.cat.split('|').includes(cat));
+  if (!m) return;
+  doc.querySelectorAll('mark.on').forEach(x => x.classList.remove('on'));
+  m.classList.add('on');
+  doc.scrollTo({top: m.offsetTop - doc.clientHeight/3, behavior:'smooth'});
+}
+
+function elegir(i){
+  actual = i;
+  [...document.querySelectorAll('#picker button')].forEach((b,j) =>
+    b.setAttribute('aria-pressed', j === i));
+  pintarDoc(DATOS[i]); pintarFicha(DATOS[i]);
+}
+
+const pick = document.getElementById('picker');
+DATOS.forEach((c,i) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.textContent = c.nombre.split('_')[0].slice(0,34);
+  b.title = c.nombre;
+  b.addEventListener('click', () => elegir(i));
+  pick.appendChild(b);
+});
+
+const bars = document.getElementById('bars');
+EVID.forEach(e => {
+  const d = document.createElement('div');
+  d.className = 'bar';
+  d.innerHTML = `<span class="nm">${esc(e.cat)}</span>` +
+    `<span class="track"><span class="fill" style="width:calc(${e.pct}% - 2px)"></span>` +
+    (e.ing != null ? `<span class="naive" style="left:${e.ing}%"></span>` : '') + `</span>` +
+    `<span class="pc">${e.pct}%</span>`;
+  bars.appendChild(d);
+});
+
+const fb = document.getElementById('fuera');
+FUERA.forEach(f => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${esc(f.categoria)}</td><td>${f.motor}</td>` +
+    `<td>${f.medida.toFixed(1)}%</td><td>${f.recall != null ? f.recall.toFixed(0)+'%' : '—'}</td>`;
+  fb.appendChild(tr);
+});
+
+elegir(0);
+</script>

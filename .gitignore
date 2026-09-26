@@ -1,0 +1,12 @@
+# El corpus: 27 MB, se reconstruye desde CUAD (ver README)
+contratos.json
+cuad/
+
+# Salidas de compilacion: las produce armar_pantalla.py
+revisor.html
+datos_pantalla.json
+ficha_ejemplo.json
+
+__pycache__/
+*.pyc
+.venv/
