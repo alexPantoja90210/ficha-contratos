@@ -21,6 +21,8 @@ scope is a decision you can argue with, not a list of whatever came out well.
 import json
 from pathlib import Path
 
+HERE = Path(__file__).resolve().parent
+
 MIN_RULE      = 65.0
 MIN_BALANCED = 70.0
 MIN_RECALL     = 70.0
@@ -59,7 +61,8 @@ RULES_MEASURED = {
     "Parties":                              4.6,
 }
 
-def decide(path="retrieval_model.json"):
+def decide(path=None):
+    path = Path(path) if path else HERE / "retrieval_model.json"
     d = json.loads(Path(path).read_text(encoding="utf-8"))
     perf = {r["category"]: r for r in d["test"]}
 

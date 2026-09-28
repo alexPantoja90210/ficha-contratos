@@ -41,7 +41,7 @@ from presence import PresenceDetector
 from scope import decide
 
 CONFIG = {c["category"]: c for c in
-          json.loads(Path("categories.json").read_text(encoding="utf-8"))}
+          json.loads((HERE / "categories.json").read_text(encoding="utf-8"))}
 BY_KEY = {key_of(k): v for k, v in CONFIG.items()}
 
 # Measurement decides the scope (see scope.py), not taste.

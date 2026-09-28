@@ -19,12 +19,16 @@ from pathlib import Path
 
 import retrieval as REC
 
+HERE = Path(__file__).resolve().parent
+
 MIN_RECALL_TO_ASSERT_ABSENCE = 60.0
 MIN_LOCATION_TO_JUMP        = 50.0
 
 
 class PresenceDetector:
-    def __init__(self, path="retrieval_model.json", calibration="calibration.json"):
+    def __init__(self, path=None, calibration=None):
+        path = Path(path) if path else HERE / "retrieval_model.json"
+        calibration = Path(calibration) if calibration else HERE / "calibration.json"
         d = json.loads(Path(path).read_text(encoding="utf-8"))
         self.cues = d["cues"]
         self.thresholds = d["thresholds"]

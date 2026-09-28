@@ -6,6 +6,9 @@ one says, which ones are missing, and **how confident that row is**.
 No model, no API keys, no database. Under a second per contract, and the only
 dependency is the Python standard library.
 
+It also runs on AWS Lambda as a 34 KB package with nothing to vendor: see
+[AWS-DEPLOY.md](AWS-DEPLOY.md).
+
 ```bash
 python sheet.py contracts.json 433
 ```
@@ -160,6 +163,10 @@ included: CUAD is CC BY 4.0.
 | `test_degradation.py` | does it fail safely on input it was not built for |
 | `test_security.py` | backtracking, dependency surface, no network |
 | `baseline_naive.py` | the parse that comes for free, as a comparison |
+| `lambda_function.py` | AWS Lambda entry point: contract in, sheet out |
+| `build_lambda.py` | builds the 34 KB deployment package, no dependencies |
+| `web/index.html` | paste-a-contract page that calls the Function URL |
+| `AWS-DEPLOY.md` | deploying it, what it costs, and how to tear it down |
 
 ## Measured against NIST AI RMF
 

@@ -2,8 +2,10 @@
 contracts.json
 cuad/
 
-# Build output: produced by build_page.py on every run
+# Build output: produced on every run
 page.html
+sheet-lambda.zip
+aws/bucket-policy.local.json
 
 # Fitted parameters the product reads at runtime are NOT ignored:
 # retrieval_model.json and calibration.json are versioned on purpose.

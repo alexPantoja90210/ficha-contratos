@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Contract Clause Sheet</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@400;600&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --paper:#FBFBFD; --surface:#FFFFFF; --surface-2:#F4F6FA;
+  --ink:#171A21; --ink-2:#5A6474; --ink-3:#8A93A3;
+  --line:#E2E5EC; --line-2:#CED4DE;
+  --accent:#2F4E9E; --accent-soft:#E8EDF9;
+  --ok:#1A7A4C; --warn:#A75E12; --absent:#7A8497; --bad:#A52222;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:"IBM Plex Serif",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --paper:#0F1216; --surface:#161A20; --surface-2:#1C222B;
+    --ink:#E7EAF0; --ink-2:#9BA5B5; --ink-3:#6E7889;
+    --line:#252B35; --line-2:#333B47;
+    --accent:#83A4E8; --accent-soft:#1B2740;
+    --ok:#46A877; --warn:#CC8B37; --absent:#788294; --bad:#E07676;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --paper:#0F1216; --surface:#161A20; --surface-2:#1C222B;
+  --ink:#E7EAF0; --ink-2:#9BA5B5; --ink-3:#6E7889;
+  --line:#252B35; --line-2:#333B47;
+  --accent:#83A4E8; --accent-soft:#1B2740;
+  --ok:#46A877; --warn:#CC8B37; --absent:#788294; --bad:#E07676;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+     font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px;padding-block:32px 56px}
+h1{font-size:clamp(25px,4vw,36px);line-height:1.15;margin:0;font-weight:600;
+   letter-spacing:-.02em;text-wrap:balance}
+h2{font-size:18px;font-weight:600;margin:0 0 4px;letter-spacing:-.01em}
+p{margin:0}
+.lede{color:var(--ink-2);max-width:64ch;margin-top:10px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+         text-transform:uppercase;color:var(--ink-3)}
+header{display:flex;flex-direction:column;gap:6px;
+       border-bottom:1px solid var(--line);padding-bottom:22px}
+.facts{display:flex;flex-wrap:wrap;gap:8px 28px;margin-top:18px}
+.fact{display:flex;flex-direction:column;gap:1px}
+.fact b{font-family:var(--mono);font-size:21px;font-weight:500;
+        font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.fact span{font-size:12px;color:var(--ink-2)}
+section{margin-top:36px}
+.sechead{display:flex;flex-direction:column;gap:2px;margin-bottom:14px}
+.sechead p{color:var(--ink-2);font-size:14px;max-width:72ch}
+
+.endpoint{display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:4px;
+  padding:10px 12px;margin-bottom:16px;font-size:13px}
+.endpoint label{font-family:var(--mono);font-size:11px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-3)}
+.endpoint input{flex:1;min-width:240px;font:inherit;font-family:var(--mono);
+  font-size:12.5px;background:var(--surface);color:var(--ink);
+  border:1px solid var(--line-2);border-radius:3px;padding:6px 9px}
+.endpoint input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+       gap:16px;align-items:start}
+@media(max-width:880px){.split{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:4px;
+       overflow:hidden}
+.panel-head{display:flex;justify-content:space-between;align-items:baseline;
+  gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);
+  background:var(--surface-2)}
+.panel-head .eyebrow{color:var(--ink-2)}
+textarea{width:100%;height:min(52vh,460px);border:0;resize:vertical;padding:16px 18px;
+  background:transparent;color:var(--ink);font-family:var(--serif);font-size:13.5px;
+  line-height:1.7}
+textarea:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  padding:10px 14px;border-top:1px solid var(--line);background:var(--surface-2)}
+button{font:inherit;font-size:13.5px;border-radius:3px;cursor:pointer;
+  padding:8px 14px;border:1px solid var(--accent);
+  background:var(--accent);color:#fff;font-weight:500}
+button:hover:not(:disabled){filter:brightness(1.08)}
+button:disabled{opacity:.5;cursor:default}
+button.ghost{background:var(--surface);color:var(--ink-2);border-color:var(--line-2);
+  font-weight:400}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.count{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-left:auto;
+  font-variant-numeric:tabular-nums}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+#sheet tbody tr{border-top:1px solid var(--line)}
+#sheet tbody tr:first-child{border-top:0}
+#sheet td{padding:9px 12px;vertical-align:top}
+.cat{font-weight:500}
+.val{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);
+     display:block;margin-top:1px;word-break:break-word}
+.chip{display:inline-block;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:2px;
+  border:1px solid currentColor;white-space:nowrap}
+.chip.ok{color:var(--ok)} .chip.rev{color:var(--warn)} .chip.no{color:var(--absent)}
+.conf{font-family:var(--mono);font-size:12px;color:var(--ink-3);
+      font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.kind{display:block;font-size:10px;color:var(--ink-3);letter-spacing:.04em}
+.passage{margin-top:7px;padding:8px 10px;background:var(--surface-2);
+  border-left:2px solid var(--line-2);border-radius:0 3px 3px 0;
+  font-family:var(--serif);font-size:12.5px;line-height:1.6;color:var(--ink-2)}
+.foot{padding:10px 14px;border-top:1px solid var(--line);background:var(--surface-2);
+  font-size:12.5px;color:var(--ink-2);display:flex;flex-wrap:wrap;gap:4px 16px}
+.foot b{font-weight:500;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.empty{padding:34px 18px;text-align:center;color:var(--ink-3);font-size:13.5px}
+.err{padding:12px 14px;color:var(--bad);font-size:13px;font-family:var(--mono)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:4px;
+  padding:15px 16px}
+.card h3{margin:0 0 6px;font-size:14px;font-weight:600}
+.card p{font-size:13.5px;color:var(--ink-2)}
+footer{margin-top:44px;padding-top:20px;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--ink-3);display:flex;flex-wrap:wrap;gap:6px 20px}
+a{color:var(--accent)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Clause sheet · CUAD · AWS Lambda</p>
+  <h1>Paste a contract, get the sheet</h1>
+  <p class="lede">The same eight clauses, the same measured accuracy, running in a Lambda function
+  with no model behind it. Rules and term retrieval over the Python standard library: no embeddings,
+  no vector store, no API keys.</p>
+  <div class="facts">
+    <div class="fact"><b>76.3%</b><span>rows correct, 101 held-out contracts</span></div>
+    <div class="fact"><b>+30</b><span>points over the naive parse</span></div>
+    <div class="fact"><b id="ms">&mdash;</b><span>milliseconds, this request</span></div>
+    <div class="fact"><b>34 KB</b><span>deployment package, zero dependencies</span></div>
+  </div>
+</header>
+
+<section>
+  <div class="endpoint" id="epbox" hidden>
+    <label for="ep">Function URL</label>
+    <input id="ep" type="url" spellcheck="false" placeholder="https://xxxxx.lambda-url.us-east-1.on.aws/">
+  </div>
+  <div class="split">
+    <div class="panel">
+      <div class="panel-head">
+        <span class="eyebrow">Contract text</span>
+        <span class="eyebrow">plain text</span>
+      </div>
+      <textarea id="text" spellcheck="false" placeholder="Paste the full text of a contract here.
+
+The sheet is built for English-language commercial agreements: the corpus behind it is 510 contracts annotated by attorneys. A Spanish contract will return rows, and they will be wrong."></textarea>
+      <div class="controls">
+        <button id="go">Build the sheet</button>
+        <button id="sample" class="ghost">Load a sample</button>
+        <span class="count" id="count">0 characters</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <span class="eyebrow">Sheet · 8 clauses</span>
+        <span class="eyebrow">confidence</span>
+      </div>
+      <div id="out"><p class="empty">Nothing yet.</p></div>
+      <div class="foot" id="foot" hidden></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sechead"><h2>How to read a row</h2></div>
+  <div class="cols">
+    <div class="card">
+      <h3>Found, absent, review</h3>
+      <p><b>Found</b> and <b>absent</b> close on their own. <b>Review</b> means the clause is one
+      where a wrong "absent" changes the economics of the deal, so the system proposes and a person
+      confirms. It is never closed automatically, however sure the detector is.</p>
+    </div>
+    <div class="card">
+      <h3>Two kinds of confidence</h3>
+      <p>A presence row carries a number <b>calibrated for that row</b>: how often the detector was
+      right when it decided by that margin. A rule row has no per-row signal, so it carries the
+      clause's measured accuracy and says so rather than dressing it up.</p>
+    </div>
+    <div class="card">
+      <h3>The sample is not a clean one</h3>
+      <p>It is a real sponsorship agreement from the held-out split, and the sheet gets
+      <b>six of eight</b> rows right on it: the attorney labels disagree on License Grant and
+      Audit Rights. Sixteen per cent of sheets come out with no errors at all, so a perfect
+      one would be the unrepresentative choice.</p>
+    </div>
+    <div class="card">
+      <h3>Short contracts are out of distribution</h3>
+      <p>Presence rows are scored over 1,600-character windows, and the corpus median is 32 KB.
+      Paste two pages and the cue terms have almost nowhere to land: the rows will come back,
+      and the presence ones will be unreliable in a way the confidence number does not capture.</p>
+    </div>
+    <div class="card">
+      <h3>Not legal advice</h3>
+      <p>It locates clauses and flags absences so a person can read them. It does not judge whether
+      a clause is favourable, and it is built for English-language contracts under US law.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>Corpus: <a href="https://github.com/TheAtticusProject/cuad">CUAD</a>, 510 contracts, CC BY 4.0</span>
+  <span>Split by contract, never by question</span>
+  <span><a href="https://github.com/alexPantoja90210/ficha-contratos">Source and measurements</a></span>
+</footer>
+
+</div>
+<script>
+// Set this to the Function URL after deploying. Left empty, the page shows a
+// field so it can be pointed at an endpoint without editing the file.
+const ENDPOINT = "";
+
+const $ = id => document.getElementById(id);
+const epbox = $("epbox"), ep = $("ep"), ta = $("text"), out = $("out"),
+      foot = $("foot"), go = $("go");
+
+// Read at call time, never cached: a value restored by the browser or pasted
+// without firing an input event would otherwise be ignored.
+function endpointNow() {
+  return ENDPOINT || (ep.value || "").trim();
+}
+if (!ENDPOINT) {
+  epbox.hidden = false;
+  try { ep.value = localStorage.getItem("sheet-endpoint") || ""; } catch (e) {}
+  ep.addEventListener("input", () => {
+    try { localStorage.setItem("sheet-endpoint", endpointNow()); } catch (e) {}
+  });
+}
+
+const CHIP = {
+  found:         ["ok",  "found"],
+  absent:        ["no",  "not present"],
+  review:        ["rev", "review"],
+  absent_review: ["rev", "confirm"],
+  model_pending: ["no",  "pending"]
+};
+
+const esc = s => String(s).replace(/[&<>"]/g, c =>
+  ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+
+function count() {
+  $("count").textContent = ta.value.length.toLocaleString() + " characters";
+}
+ta.addEventListener("input", count);
+
+function render(data) {
+  const rows = data.rows.map(r => {
+    const [cls, label] = CHIP[r.state] || ["no", r.state];
+    const conf = r.confidence == null ? "&mdash;"
+      : Math.round(r.confidence) + "%";
+    const kind = r.confidence == null ? ""
+      : `<span class="kind">${r.confidence_kind === "row" ? "this row" : "clause"}</span>`;
+    const value = r.value ? `<span class="val">${esc(r.value)}</span>` : "";
+    const passage = r.text && r.state !== "absent"
+      ? `<div class="passage">${esc(r.text.slice(0, 300))}</div>` : "";
+    return `<tr>
+      <td><span class="chip ${cls}">${label}</span></td>
+      <td><span class="cat">${esc(r.category)}</span>${value}${passage}</td>
+      <td class="conf">${conf}${kind}</td>
+    </tr>`;
+  }).join("");
+  out.innerHTML = `<table id="sheet"><tbody>${rows}</tbody></table>`;
+  const s = data.summary;
+  foot.hidden = false;
+  foot.innerHTML =
+    `<span>closes on its own <b>${s.closes_alone}</b></span>` +
+    `<span>to review <b>${s.to_review}</b></span>` +
+    `<span><b>${data.characters.toLocaleString()}</b> characters read</span>`;
+  $("ms").textContent = data.elapsed_ms;
+}
+
+function fail(msg) {
+  out.innerHTML = `<p class="err">${esc(msg)}</p>`;
+  foot.hidden = true;
+  $("ms").innerHTML = "&mdash;";
+}
+
+async function build() {
+  const text = ta.value.trim();
+  const endpoint = endpointNow();
+  if (!text) return fail("Paste a contract first.");
+  if (!endpoint) return fail("Set the Function URL above first.");
+  go.disabled = true;
+  out.innerHTML = `<p class="empty">Reading&hellip;</p>`;
+  foot.hidden = true;
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text })
+    });
+    const data = await res.json().catch(() => null);
+    if (!res.ok) return fail(`${res.status} — ${(data && data.error) || res.statusText}`);
+    render(data);
+  } catch (e) {
+    fail("Could not reach the endpoint. Check the URL and that CORS is configured.");
+  } finally {
+    go.disabled = false;
+  }
+}
+go.addEventListener("click", build);
+
+// A real contract from the held-out split (CUAD, CC BY 4.0). The sheet
+// scores 6 of 8 on it: the attorney labels disagree on License Grant and
+// Audit Rights. Six or seven of eight is the normal case, so this is what
+// the sample shows rather than a sheet picked for coming out clean.
+const SAMPLE = "Exhibit 10.1     SPONSORSHIP AGREEMENT   BY AND BETWEEN   ANTHEMIC, LLC & VNUE   This Sponsorship Agreement (the Agreement) is entered into as of JUNE 23, 2015 (the \"Effective Date\") by and between ANTHEMIC, LLC (\"ANTHEMIC\") and VNUE INC (the \"Sponsor\").   A. ANTHEMIC is producing FLOODFEST Chicago 2015. In this Agreement, \"Event\" means the FLOODfest Event at the Virgin Hotel Chicago. The Event is scheduled for Thursday July 30, 2015 thru Saturday, August 1st, 2015 (the \"Event Date(s)\").   B. VNUE is a video streaming App/Technology Company. ANTHEMIC and VNUE both want VNUE to be a sponsor of the Event under the terms of this Agreement.   For and in consideration of the mutual covenants, rights, and obligations set forth in this Agreement, the parties agree as follows:   1. Sponsorship.   (a) During  the term of this Agreement, the Sponsor will be a co-presenting sponsor of FLOODfest Chicago at Virgin Hotel, which entitles the Sponsor to the following:   (i) Sponsor will be a non-exclusive co-presenting sponsor of the Event.   (ii) ANTHEMIC shall provide to Sponsor space for a VNUE activation on the 3rd Floor at Virgin Hotel (the \"Sponsor area\"). This space will be roughly 10 feet by 10 feet (100 square feet).   (iii) Sponsor shall receive access to the On-Site Event Dates location for onsite distribution of Company approved marketing materials. Specific amount of said materials To Be Determined, after being mutually agreed upon by both ANTHEMIC and VNUE.   (iv) Sponsor will be included as co-presenting partner upon on-site signage.   (v) Distribute approved promotional materials as part of VNUE's activation, VNUE responsible for staffing of said activation.   (vi) Conduct demonstrations, approved activation in designated area on 3rd Floor   (vii) Name  or logo usage of FLOODfest Chicago use, No Rights for use of official Lollapalooza Festival are given as part of this sponsorship.   (viii) Rights to event marks subject to FLOOD Magazine and ANTHEMIC approval.   (ix) The Sponsor's logo or name on Event website and opt in on RSVP page for event   (x) Full page ad in fall issue of FLOOD Magazine   (xi) Dedicated e-mail sent to attendees post-event to watch and/ or listen to FLOODfest content\n\nPage of 1 of Sponsorship Agreement\n\n\n\n\n\n\n\n  (xii) One month ROS of FLOODMAGAZINE.COM. Campaign beginning August 2015. All finished art and deliverables must be sent from VNUE to ANTHEMIC by no later than July 15, 2015 to insure inclusion. Refer to media plan for specific dates. (xiii) The Sponsor's logo or name on all print and/or web Event collateral (xiv) The Sponsor's logo or name included on Event website and opt-in RSVP pages, as follows: FLOODmagazine.com/ FLOODfestChicago and/ or FLOODfest.com (xv) The Sponsor's logo or name also included on any FLOODfest Chicago flyers (digital and/ or physical). (xvi) The Sponsor's logo or name also included on FLOODfest Chicago-dedicated email blasts, both pre and post event. These email blasts will include a call to action to watch and/ or listen to content from FLOODfest Chicago shows, with a link to download the VNUE app. (xvii) Post-event email blast(s) will go out as soon as possible, once the FLOODfest Chicago content is ready, ideally targeting that next Monday, August 10, 2015. Formal blast date will be dependent upon turn-around time of content from VNUE (maximum ANTHEMIC/ FLOOD Magazine turnaround time = VNUE content delivery date+7 days). This post-event email blast will go out to tall ANTHEMIC and FLOOD Magazine RSVP's, as well as our FLOOD Magazine's national newsletter list of roughly 100,000 recipients. (xviii) There will be a press release generated by ANTHEMIC and FLOOD Magazine for FLOODfest Chicago. This press release will include mention of VNUE as co-presenting sponsor of said event. (xix) ANTHEMIC and FLOOD Magazine will promote FLOODfest Chicago content page(s), including The Sponsor logo or name via FLOOD Magazine socials including: Twitter, Facebook and Instagram. (xx) FLOOD Magazine will have at least one future editorial piece based around FLOODfest Chicago content, and VNUE will be featured within this piece. (xxi) FLOODfest Chicago data will be collected, compiled and forwarded to VNUE by Monday August 10, 2015. (xxii) VNUE may include approved FLOOD Magazine logo or name on top of videos. VNUE is also approved to use the phrasing \"FLOODfest LIVE at Virgin Hotel Chicago\" above applicable FLOODfest Chicago video content. (xxiii) ANTHEMIC and/ or FLOOD Magazine agree to introduce key VNUE personnel/ staff to key VIRGIN HOTEL CHICAGO personnel/ staff, upon receipt of final payment, on or before July 15, 2015. (b) All  costs associated with the creation, operation and management of the Sponsor Area and  any activities conducted, included (without limitation) the set-up, breakdown and staffing of the Sponsor Area, recording and filming of live shows, and artist and label/ mechanical clearances shall be the sole responsibility of the Sponsor.\n\nPage of 2 of Sponsorship Agreement\n\n\n\n\n\n\n\n    (c) ANTHEMIC will have no liability whatsoever for (and Sponsor shall indemnify and hold ANTHEMIC harmless for) any injuries to persons, or loss of damage to property arising out of or  in any way related to the Sponsor Area, or to any property, materials, products and/or merchandise which Sponsor uses, distributes and/or exhibits during Event Dates.       2. Sponsorship Consideration.       (a) To be a sponsor of the Event, the Sponsor will pay ANTHEMIC the following:\n\nFee Due Dates\n\n$75,000 - Sponsorship Fee $50,000 due upon receipt of this term sheet   $25,000 final balance payment due upon announcement date of July 15, 2015.\n\n  (b) If the Sponsor fails to pay ANTHEMIC within the designated time period, then interest will begin to accrue immediately on the past due amount at the rate of the lesser of the maximum amount allowed by law or 10% annually. If it becomes necessary for ANTHEMIC to retain legal counsel to collect any portion of the fees due under this Agreement, in addition to all such fees, the Sponsor will be liable for payment of all legal fees incurred by ANTHEMIC plus interest at the maximum rate permitted by law on any late payments plus any other costs of collection.   3.  Term and Termination: This term of this Agreement commences on the Effective Date and terminates on August 2nd, 2015 upon completion of event. ANTHEMIC may at any time terminate this Agreement if the Sponsor breaches any material term or provision of this Agreement.   4. Sponsorship of Future FLOODfest Chicago event. Before April 1, 2016 ANTHEMIC will not discuss in any manner with any person or entity (other than the Sponsor) to be a sponsor of the Event in the Video App category. If ANTHEMIC produces the Event in 2016 and seeks a sponsor in the category, ANTHEMIC will first contact the Sponsor and provide the Sponsor with written notice (the \"Notice) of the terms under which the Sponsor can be the category sponsor for the 2016 Event. The Sponsor will have 15 days from receipt of the Notice to accept the terms to be the category sponsor of the 2014 Event. If the Sponsor decides not to be the category sponsor of the 2016 Event or fails to timely respond to the Notice, then ANTHEMIC may approach other parties to be the category sponsor.\n\nPage of 3 of Sponsorship Agreement\n\n\n\n\n\n\n\n  5. License.   (a) The Sponsor grants ANTHEMIC a license to use the Sponsor's name, logo, and other identifying characteristics in promoting the Event. ANTHEMIC may use the Sponsor's name, logo, and other identifying characteristics on merchandise related to the Event, and the Sponsor is not entitled to any compensation from the sale of such merchandise. The right to use the Sponsor's name, logo and other identifying characteristics in connection with merchandise for the 2015 Event survives termination of this Agreement. After termination of this Agreement, ANTHEMIC may not design new merchandise that includes the Sponsor's name, logo, or other identifying characteristics for the 2015 Event but may produce additional previously designed and approved merchandise.   (b) During the term of this Agreement, the Sponsor may identify itself as a sponsor of the Event in any and all of its advertising for the Sponsor's products and or services in the Category. ANTHEMIC will provide the Sponsor with a suite of official logos and images for the Event to use on advertising, web site and other avenues as approved by ANTHEMIC. Any use by the Sponsor of the Event's name or logo must be approved in advance by ANTHEMIC. Any creative work used by the Sponsor with respect to this Agreement must be approved by ANTHEMIC.   (c) Any use by ANTHEMIC of the Sponsor's name or logo, must be approved in advance by the Sponsor. Subject to the preceding, ANTHEMIC has absolute control and discretion regarding all signage at the Event.   (d)  ANTHEMIC acknowledges the Sponsor's exclusive ownership in the Sponsor's trademarks and further acknowledges that the trademarks are unique and original to the Sponsor and that the Sponsor is the owner of the trademarks. ANTHEMIC will not, at any time during or after the Effective Date, dispute or contest, directly or indirectly, the Sponsor's exclusive ownership in the Sponsor's trademarks. ANTHEMIC acknowledges that its use of the Sponsor's trademarks inures to the Sponsor's benefit, and that ANTHEMIC will not acquire any ownership in the Sponsor's trademarks as a result of the license granted by this Agreement.   (e)  The Sponsor acknowledges ANTHEMIC's exclusive ownership in their respective trademarks and further acknowledges that the trademarks are unique and original to ANTHEMIC and that ANTHEMIC are the owners of their respective trademarks. The Sponsor will not, at any time after the Effective Date, dispute or contest, directly or indirectly, ANTHEMIC's exclusive ownership in their respective trademarks. The Sponsor acknowledges that its use of ANTHEMIC's trademarks inures to ANTHEMIC's benefit, and that the Sponsor will not acquire any ownership in ANTHEMIC's trademarks as a result of the license granted by this Agreement.\n\nPage of 4 of Sponsorship Agreement\n\n\n\n\n\n\n\n  The Sponsor acknowledges that it has no claims or rights in the \"FLOODfest\" trademark and, during or after the Term of this Agreement, will not assert any claim in the \"FLOODfest\" trademark.   6. Sponsor Merchandise. The Sponsor may not distribute any merchandise or articles at the Event without ANTHEMIC's prior written consent.   7. Force Majeure. Any delay or failure of either party to perform its obligations under this Agreement is excused to the extent that it is caused by an event or occurrence beyond its reasonable control, including acts of God, actions by governmental authority (whether valid or invalid), fires, floods, windstorms, explosions, riots, natural disasters, wars, sabotage or labor problems, provided the party claiming force majeure promptly notifies the other party of the event of force majeure, the anticipated duration of the event of force majeure, and the steps being taken to remedy the failure.   8. Rain or Shine. ANTHEMIC anticipates that the Event will be held regardless of the weather. If the Event cannot be held on the scheduled dates, ANTHEMIC will make good faith efforts to re-schedule the Event. The Sponsor must provide the consideration in Section 2 regardless of whether the Event is actually held.   9. Warranties.   (a) The Sponsor's Warranty. The Sponsor warrants to ANTHEMIC that: (i) the Sponsor has the right and authority to enter into and perform its obligations under this Agreement; (ii) the Sponsor will perform its obligations under this Agreement in a commercially reasonable manner; (iii) the Sponsor's marks do not and will not violate any applicable law or regulation or infringe any proprietary, intellectual property, contract or tort right of any person; and (iv) the Sponsor owns its marks and all intellectual property rights therein.   (b) ANTHEMIC Warranty. ANTHEMIC represents and warrants to the Sponsor that: (i) ANTHEMIC has the rights and authority to enter into and perform its obligations under this Agreement, and that, in doing so, it will not violate the rights of any third parties; (ii) any ANTHEMIC- provided materials (including trademarks) will not contain any content, materials or advertising that actually or potentially violates any applicable law or regulation or infringe any proprietary, intellectual property, contract or tort right of any person; and (iii) ANTHEMIC will perform its obligations under this Agreement in a commercially reasonable manner.\n\nPage of 5 of Sponsorship Agreement\n\n\n\n\n\n\n\n  10. Indemnification.   (a)  By The Sponsor.  The Sponsor will indemnify, hold harmless and defend ANTHEMIC, and their directors, officers, shareholders, members, managers, employees and agents from and against any action, claim, demand, expense, or liability, including reasonable attorneys' fees and court costs incurred in connection with any claim, demand, or suit for damages, injunction, or other relief to the extent such claim arises out of: (i) any allegation that the Sponsor's marks infringe a third person's copyright or trademark right, or misappropriate a third person's trade secret; (ii) any gross negligence or willful misconduct of the Sponsor; (iii) Sponsor's products; (iv) consumer or other contesting/ prizing. ANTHEMIC will have the right to participate, at its own cost, in the defense of any such claim through counsel of its own choosing.   (b) By ANTHEMIC. ANTHEMIC will indemnify, hold harmless and defend the Sponsor, and its directors, officers, employees and agents from and against any action, claim, demand, expense, or liability, including reasonable attorneys' fees and court costs incurred in connection with any claim, demand, or suit for damages, injunction, or other relief to the extent such claim arises out of: (i) any allegation that ANTHEMIC's marks infringe a third person's copyright or trademark right, or misappropriate a third person's trade secret; or (ii) any gross negligence or willful misconduct of ANTHEMIC. The Sponsor will have the right to participate, at its own cost, in the defense of any such claim through counsel of its own choosing.   11. Insurance. Without limiting or qualifying the Sponsor's liabilities, obligations, or indemnities, before the Event, the Sponsor will obtain, at its sole cost and expense, a comprehensive general liability insurance policy from a company acceptable to ANTHEMIC and authorized to do business in the state of Illinois with limits of no less than $1,000,000.00 per occurrence and $2,000,000.00 as an annual aggregate. The insurance mentioned in the preceding sentence will name ANTHEMIC as additional insured. The Sponsor will also maintain any statutorily required workers compensation insurance. The Sponsor will provide ANTHEMIC with properly executed certificates of insurance before the Sponsor provides any products or services at the Event, and the insurance will contain a provision that it cannot be reduced or cancelled unless and until the insurance company notifies ANTHEMIC. Any third party that performs services on the Event grounds on behalf of the Sponsor will be required to satisfy the same insurance requirements as provided in this section.   12. Independent Contractors. The parties and their respective personnel, are and will be independent contractors and neither party by virtue of this Agreement will have any right, power or authority to act or create any obligation on behalf of the other party, unless expressly provided in this Agreement.\n\nPage of 6 of Sponsorship Agreement\n\n\n\n\n\n\n\n    13. Notices. All notices and payment given in accordance with this Agreement will be effective if hand delivered or sent by overnight courier or by certified mail, return receipt requested to the following addresses:   ANTHEMIC, LLC 5810 W. 3rd Street LA, CA 90036 Attn: Alan Sartirana     VNUE INC 2003 Western Avenue, Suite 460 Seattle, Washington 98121 ATTN: Matthew Carona   Addresses for notice may be changed from time to time by written notice to the other party. Any communication or payment given by mail will be effective upon the earlier of (a) five business days following deposit in a post office or other official depository under the care and custody of the United States Postal Service; or (b) actual receipt, as indicated by the return receipt. If notice or payment is given by personal delivery or by overnight air courier, the notice or payment will be effective when delivered to the appropriate address set forth above.   14.  LIMITATION OF DAMAGES. EXCEPT FOR INDEMNIFICATION  OBLIGATIONS DUE TO LIABILITIES TO THIRD PARTIES, NOTWITHSTANDING ANY PROVISION CONTAINED IN THIS AGREEMENT TO THE CONTRARY, NO PARTY TO THIS AGREEMENT WILL BE LIABLE TO ANY OTHER PARTY TO THIS AGREEMENT FOR ANY INCIDENTAL, INDIRECT, SPECIAL, CONSEQUENTIAL OR PUNITIVE DAMAGES (INCLUDING DAMAGES FOR LOSS OF USE, POWER, BUSINESS GOOD WILL, REVENUE OR PROFIT, NOR FOR INCREASED EXPENSES, OR BUSINESS INTERRUPTION) ARISING OUT OF OR RELATED TO THE PERFORMANCE OR NON PERFORMANCE OF THIS AGREEMENT UNLESS THE DAMAGES AROSE DUE TO A PARTY'S GROSS NEGLIGENCE OR WILLFUL BREACH OF THIS AGREEMENT.   15. Survival. Those provisions of this Agreement that by their nature extend  beyond termination or expiration of this Agreement will survive such termination or expiration.   16.  Assignment.  This Agreement is personal to each of the parties, and neither party may assign or delegate any of its rights or obligations under this Agreement without first obtaining the other party's written consent.\n\nPage of 7 of Sponsorship Agreement\n\n\n\n\n\n\n\n  17. Governing Law and Venue. This Agreement is to be governed and construed according to the laws of the State of California without regard to conflicts of law. The proper exclusive venue for resolution of any dispute related to this Agreement is only in Los Angeles, California, and both parties consent to jurisdiction and venue in Los Angeles, California.   18. Entire Agreement. This Agreement contains the entire agreement between the parties relative to the subject matter and supersedes any other prior understandings, written or oral, between the parties with respect to this subject matter. No variations, modifications, or changes in the Agreement are binding on any party to the Agreement unless set forth in a document duly executed by or on behalf of such parties.   19. Section References. When this Agreement makes reference to an article, section, paragraph, clause, schedule or exhibit, that reference is to an article, section, paragraph, clause, schedule or exhibit of this Agreement unless the context clearly indicates otherwise. Whenever the words \"include,\" \"includes,\" or \"including\" are used in this Agreement, they are deemed to be followed by the words \"without limitation.\"   20. Severability. If a mediator, arbitrator, or court holds, for any reason, that one or more provisions of this Agreement is invalid, illegal, or unenforceable in any respect, such invalidity, illegality, or unenforceability will not affect any other provision of this Agreement, but such provision will be deemed deleted, and the deletion will not affect the validity of other provisions of this Agreement.   21. Counterparts. The parties may execute this Agreement in any number of counterparts, each of which is deemed an original, but all of which together constitute one and the same instrument. This Agreement may be executed by facsimile, PDF, or other electronic signature.   22. Construction. All parties have been advised to seek their own independent counsel concerning the interpretation and legal effect of this Agreement and have either obtained such counsel or have intentionally refrained from doing so and have knowingly and voluntarily waived such right. Consequently, the normal rule of construction to the effect that any drafting ambiguities are to be resolved against the drafting party will not be employed in the interpretation of this Agreement or any amendment or exhibits.\n\nPage of 8 of Sponsorship Agreement\n\n\n\n\n\n\n\n  By their representative's signature, the parties agree to and accept this Agreement.   ANTHEMIC, LLC   VNUE, INC               By: Alan Sartirana   By: /s/ Matthew Carona                 Title: CEO/ Founder   Title: CEO                 Date: June 23, 2015   Date: June 23rd 2015\n\nPage of 9 of Sponsorship Agreement";
+
+$("sample").addEventListener("click", () => { ta.value = SAMPLE; count(); build(); });
+count();
+</script>
+</body>
+</html>
