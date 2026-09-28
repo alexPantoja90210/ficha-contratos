@@ -167,6 +167,7 @@ included: CUAD is CC BY 4.0.
 | `build_lambda.py` | builds the 34 KB deployment package, no dependencies |
 | `web/index.html` | paste-a-contract page that calls the Function URL |
 | `AWS-DEPLOY.md` | deploying it, what it costs, and how to tear it down |
+| `verify_deployment.py` | diffs a deployed Function URL against local output |
 
 ## Measured against NIST AI RMF
 
