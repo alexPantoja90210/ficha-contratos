@@ -25,13 +25,14 @@ CORPUS_CANDIDATES = [Path("contracts.json"), HERE / "contracts.json",
 TIMEOUT = 30
 
 
-def call(url, payload=None, method=None, raw=None, origin=None):
+def call(url, payload=None, method=None, raw=None, origin=None, extra=None):
     """-> (status, parsed body or raw text, elapsed ms, response headers)"""
     data = raw if raw is not None else (
         json.dumps(payload).encode("utf-8") if payload is not None else None)
     headers = {"content-type": "application/json"}
     if origin:
         headers["Origin"] = origin
+    headers.update(extra or {})
     req = urllib.request.Request(
         url, data=data, method=method or ("POST" if data is not None else "GET"),
         headers=headers)
@@ -74,7 +75,12 @@ def check_cors(url):
         print("      Function URL, never both.")
         ok = False
 
-    status, _, _, h = call(url, method="OPTIONS", raw=b"", origin=origin)
+    # A real preflight carries Access-Control-Request-Method. Without it the
+    # request is not a preflight at all: Lambda stops recognising it as one,
+    # forwards it to the function, and the reply looks broken when nothing is.
+    status, _, _, h = call(url, method="OPTIONS", raw=b"", origin=origin,
+                           extra={"Access-Control-Request-Method": "POST",
+                                  "Access-Control-Request-Headers": "content-type"})
     pre = h.get_all("access-control-allow-origin") or []
     methods = (h.get("access-control-allow-methods") or "").upper()
     good_pre = status in (200, 204) and len(pre) == 1 and "POST" in methods
