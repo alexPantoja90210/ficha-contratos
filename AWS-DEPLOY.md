@@ -45,6 +45,30 @@ python build_lambda.py
 Writes `sheet-lambda.zip`. Rerun it after any change to the code or the fitted
 model; it is the only build step.
 
+## Creating it in the console instead
+
+Steps 2 to 4 below are the CLI path. The same three things can be made in the
+console, which creates the execution role for you and writes the Function URL
+permission policy automatically:
+
+1. **Lambda → Create function → Author from scratch.** Name it, choose runtime
+   **Python 3.13**, architecture x86_64. Under *Change default execution role*,
+   leave **Create a new role with basic Lambda permissions** — that is the same
+   least-privilege role step 2 builds by hand.
+2. **Configuration → General configuration → Edit:** memory **512 MB**,
+   timeout **10 sec**.
+3. **Code → Upload from → .zip file**, and pick `sheet-lambda.zip`. Then
+   **Runtime settings → Edit** and set the handler to
+   `lambda_function.handler` — the console defaults to `lambda_function.lambda_handler`,
+   which does not exist here and fails at the first invocation.
+4. **Configuration → Function URL → Create function URL:** auth type **NONE**,
+   tick **Configure cross-origin resource sharing (CORS)**, and set
+   *Allow origin* to `*`, *Allow headers* to `content-type`, *Allow methods* to
+   `GET` and `POST`.
+
+After that, `aws lambda update-function-code` (see *Updating*) is the fastest way
+to push later changes without clicking through the console again.
+
 ## 2. The execution role
 
 Least privilege: the function writes its own logs and does nothing else. It reads
@@ -94,11 +118,25 @@ aws lambda add-permission `
   --principal "*" `
   --function-url-auth-type NONE `
   --region $REGION
+
+aws lambda add-permission `
+  --function-name $FN `
+  --statement-id FunctionURLAllowInvoke `
+  --action lambda:InvokeFunction `
+  --principal "*" `
+  --invoked-via-function-url `
+  --region $REGION
 ```
 
-**The second command is not optional.** A Function URL with `--auth-type NONE`
-still returns `403 Forbidden` until that resource policy exists. It is the single
-most common reason a fresh Function URL appears broken.
+**Those permission commands are not optional on this path.** A Function URL with
+`--auth-type NONE` still returns `403 Forbidden` until the resource policy exists,
+and it is the most common reason a fresh Function URL appears broken.
+
+**Creating the URL in the console instead? Skip them.** When the URL is created
+with auth type NONE through the console or AWS SAM, Lambda writes the resource
+policy for you. Only the CLI, the API and CloudFormation leave it to you. Note
+that deleting the URL does not remove the policy either way — the teardown
+section handles that.
 
 Get the URL:
 
@@ -168,6 +206,10 @@ endpoint you have forgotten about is an endpoint you are not watching.
 ```powershell
 aws lambda delete-function-url-config --function-name $FN --region $REGION
 aws lambda delete-function --function-name $FN --region $REGION
+# Deleting the function removes its resource policy with it. If you ever delete
+# only the URL and keep the function, remove the statements by hand:
+#   aws lambda remove-permission --function-name $FN --statement-id FunctionURLAllowPublicAccess
+#   aws lambda remove-permission --function-name $FN --statement-id FunctionURLAllowInvoke
 aws logs delete-log-group --log-group-name "/aws/lambda/$FN" --region $REGION
 aws iam detach-role-policy --role-name "$FN-role" --policy-arn arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 aws iam delete-role --role-name "$FN-role"
