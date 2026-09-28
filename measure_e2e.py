@@ -14,7 +14,7 @@ import measure_rules as R
 from locator import TextLocator
 from text_rules import parties_from_text
 
-# category -> (regla, comparador, % medido con el parrafo ya localizado)
+# category -> (rule, comparator, % measured with the paragraph already located)
 CASES = [
     ("Document Name",                      R.rule_name,     R.same_text,    97.6),
     ("Governing Law",                      R.rule_law,        R.same_contains, 95.1),
@@ -25,21 +25,21 @@ CASES = [
     ("Renewal Term",                       R.rule_renewal, R.same_contains, 61.3),
 ]
 
-def main(ruta_json, ruta_csv):
-    contracts = json.loads(Path(ruta_json).read_text(encoding="utf-8"))
+def main(corpus_path, clauses_path):
+    contracts = json.loads(Path(corpus_path).read_text(encoding="utf-8"))
     rows = list(csv.DictReader(io.StringIO(
-        Path(ruta_csv).read_text(encoding="utf-8-sig", errors="replace"))))
+        Path(clauses_path).read_text(encoding="utf-8-sig", errors="replace"))))
 
-    # el csv nombra los contracts con extension .pdf; los textos son .txt
+    # the csv names contracts with a .pdf extension; the texts are .txt
     def stem(n): return n[:-4] if n.lower().endswith(".pdf") else n
     missing = sum(1 for f in rows if stem(f["Filename"]) not in contracts)
     print(f"contracts: {len(contracts)}   rows: {len(rows)}   unmatched: {missing}\n")
 
     print(f"{'category':36}{'with value':>10}{'e2e':>8}{'normalize only':>16}{'cost':>8}")
     summary = []
-    for cat, regla, compara, anchor_at in CASES:
+    for cat, rule, compare, located in CASES:
         col = R.answer_column(rows[0], cat)
-        con = ok = 0
+        with_value = ok = 0
         for row in rows:
             real = (row.get(col) or "").strip()
             if not real or R.REDACTED.fullmatch(real):
@@ -47,12 +47,12 @@ def main(ruta_json, ruta_csv):
             text = contracts.get(stem(row["Filename"]))
             if text is None:
                 continue
-            con += 1
-            if compara(regla(TextLocator(text).fragments(cat)), real):
+            with_value += 1
+            if compare(rule(TextLocator(text).fragments(cat)), real):
                 ok += 1
-        pct = 100 * ok / con if con else 0.0
-        summary.append((cat, con, pct, anchor_at))
-        print(f"{cat:36}{con:>10}{pct:>7.1f}%{anchor_at:>15.1f}%{pct-anchor_at:>+7.1f}")
+        pct = 100 * ok / with_value if with_value else 0.0
+        summary.append((cat, with_value, pct, located))
+        print(f"{cat:36}{with_value:>10}{pct:>7.1f}%{located:>15.1f}%{pct-located:>+7.1f}")
     return summary
 
 if __name__ == "__main__":

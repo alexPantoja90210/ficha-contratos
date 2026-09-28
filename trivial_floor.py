@@ -13,8 +13,8 @@ Usage:  python trivial_floor.py master_clauses.csv [out.csv]
 import csv, io, sys
 from pathlib import Path
 
-SKEW_WARNING = 75.0     # por encima: la accuracy deja de ser informativa
-USEFUL        = 65.0     # por debajo: un numero de accuracy si significa algo
+SKEW_WARNING = 75.0     # above this, accuracy stops being informative
+USEFUL       = 65.0     # below this, an accuracy figure does mean something
 
 def answer_column(row, category):
     for suf in ("-Answer", "- Answer"):
@@ -43,8 +43,8 @@ def main(path, out=None):
             "si": si, "no": no, "total": len(vals),
             "trivial_floor_pct": round(floor, 1),
             "majority_class": "Yes" if si >= no else "No",
-            # con clase minoritaria escasa, la accuracy miente: lo que importa
-            # es cuantas de las que SI estan logramos encontrar
+            # with a scarce minority class accuracy lies: what matters is how
+            # many of the ones that ARE there we manage to find
             "valid_metric": "accuracy" if floor < USEFUL else "recall_clase_minoritaria",
             "human_confirmations": min(si, no),
         })

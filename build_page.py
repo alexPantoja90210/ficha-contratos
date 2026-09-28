@@ -20,9 +20,9 @@ page carries a build stamp so it is always clear which build is live.
 import argparse, datetime, json, os, re, sys
 from pathlib import Path
 
-# El proyecto lee sus data con rutas relativas (categories.json,
-# retrieval_model.json, template.html), asi que el script se planta
-# en su propia carpeta y se puede invocar desde where sea.
+# The project reads its data with relative paths (categories.json,
+# retrieval_model.json, template.html), so the script plants itself in its own
+# folder and can be invoked from anywhere.
 HERE = Path(__file__).resolve().parent
 os.chdir(HERE)
 sys.path.insert(0, str(HERE))
@@ -39,21 +39,22 @@ DEFAULT_CONTRACTS = [
     "VEONEER,INC_02_21_2020-EX-10.11-JOINT VENTURE AGREEMENT",
 ]
 
-# Una sola cifra por category en toda la pagina: la de la particion de held_out
-# (medir_ficha.py). Nunca la de los 510, para no publicar dos numeros del mismo.
+# One single figure per category across the whole page: the one from the
+# held_out partition (measure_sheet.py). Never the one over all 510, so that two
+# numbers for the same thing are never published.
 TESTED = {"Governing Law": 90, "Cap on Liability": 86, "License Grant": 76,
           "Insurance": 76, "Agreement Date": 74, "Audit Rights": 73,
           "Effective Date": 67, "Document Name": 66}
 
-MAX_TEXT = 60000          # lo que se incrusta del contract
+MAX_TEXT = 60000          # how much of the contract gets embedded
 DATE_RE = re.compile(
     r"(?i)((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2}"
     r"(?:st|nd|rd|th)?,?\s*\d{4}|\d{1,2}/\d{1,2}/\d{2,4}"
     r"|\d{1,2}\s*(?:st|nd|rd|th|t\s*h)?\s+day\s+of\s+[A-Za-z]+,?\s*\d{4})")
 
 
-# El corpus vive outside del repositorio (27 MB). Se busca where suele estar,
-# en vez de exigir que se escriba la path en cada corrida.
+# The corpus lives outside the repository (27 MB). It is looked for where it
+# usually sits, rather than demanding the path be typed on every run.
 CORPUS_CANDIDATES = [
     Path("contracts.json"),
     HERE / "contracts.json",
@@ -75,7 +76,7 @@ def resolve_one(clave_usuario, names):
     if s.isdigit():
         i = int(s)
         if not 0 <= i < len(names):
-            sys.exit(f"indice outside de span_range: {i} (hay {len(names)})")
+            sys.exit(f"index out of range: {i} (there are {len(names)})")
         return names[i]
     coinciden = [n for n in names if s.lower() in n.lower()]
     if not coinciden:
@@ -213,7 +214,7 @@ def main():
     html = html.replace("__STAMP__", stamp)
     for marker, value in (("__DATOS__", data), ("__EVID__", evid), ("__FUERA__", fuera_out)):
         if marker not in html:
-            sys.exit(f"la plantilla no tiene {marker}")
+            sys.exit(f"the template has no {marker}")
         html = html.replace(marker, json.dumps(value, ensure_ascii=False))
     Path(a.out).write_text(html, encoding="utf-8")
 

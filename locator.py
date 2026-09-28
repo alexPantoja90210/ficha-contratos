@@ -16,9 +16,9 @@ would be a lie: any rule would then find "something".
 """
 import re
 
-FRONT_WINDOW = 8000   # cubre el 94% de los campos de portada
-AFTER_ANCHOR   = 1200   # text util tras un ancla lexica
-BEFORE_ANCHOR     = 400
+FRONT_WINDOW  = 8000   # covers 94% of the header fields
+AFTER_ANCHOR  = 1200   # useful text after a lexical anchor
+BEFORE_ANCHOR =  400
 
 ANCHORS = {
     "governing law": [
@@ -37,8 +37,8 @@ ANCHORS = {
     ],
 }
 
-# Las fechas se buscan SOLO en la portada y SOLO hacia adelante del ancla:
-# una ventana que mire hacia atras arrastra fechas de otra clausula.
+# Dates are searched ONLY in the front matter and ONLY forward of the anchor:
+# a window that looks backwards drags in a date from another clause.
 DATE_ANCHORS = {
     "agreement date": [
         r"dated\s+as\s+of", r"made\s+(?:and\s+entered\s+into\s+)?as\s+of",
@@ -61,48 +61,48 @@ def key_of(name):
 
 
 class TextLocator:
-    """Dado el text completo de un contract, propone fragments por category."""
+    """Given the full text of a contract, proposes fragments per category."""
 
     BOILERPLATE = re.compile(
         r"(?i)^(exhibit|ex-|execution\s+(copy|version)|confidential|"
         r"page\s+\d+|redacted|filed|form\s+\d|schedule\b|annex\b|"
         r"\[?\*+\]?|\d+[\d.\-]*)\b")
-    TIPO = re.compile(r"(?i)\b(agreements?|contract|licen[cs]e|lease|indenture|"
+    KIND = re.compile(r"(?i)\b(agreements?|contract|licen[cs]e|lease|indenture|"
                       r"memorandum\s+of\s+understanding)\b")
 
     def __init__(self, text):
         self.text = text
-        self.portada = text[:FRONT_WINDOW]
+        self.front = text[:FRONT_WINDOW]
 
     # -- helpers -----------------------------------------------------------
-    def _windows(self, patrones, text=None, maximo=6,
-                  antes=BEFORE_ANCHOR, despues=AFTER_ANCHOR):
+    def _windows(self, patterns, text=None, limit=6,
+                 before=BEFORE_ANCHOR, after=AFTER_ANCHOR):
         text = self.text if text is None else text
         out = []
-        for pat in patrones:
+        for pat in patterns:
             for m in re.finditer(pat, text, re.I):
-                out.append(text[max(0, m.start() - antes): m.end() + despues])
-                if len(out) >= maximo:
+                out.append(text[max(0, m.start() - before): m.end() + after])
+                if len(out) >= limit:
                     return out
         return out
 
-    def _after_anchor(self, patrones, text, despues, maximo=8, antes=0):
-        """Ventanas que empiezan EN el ancla: no arrastran data anteriores.
+    def _after_anchor(self, patterns, text, after, limit=8, before=0):
+        """Windows that start AT the anchor: they drag in no earlier data.
 
-        Devuelve varias, en ordered de specificity del pattern y luego de
-        aparicion. La regla recorre la lista y se queda con la primera que
-        rinda un value; una sola ventana falla cuando el ancla aparece antes
-        mencionada que definida.
+        Returns several, ordered by pattern specificity and then by position.
+        The rule walks the list and keeps the first one that yields a value; a
+        single window fails whenever the anchor is mentioned before it is
+        defined.
         """
         out = []
-        for pat in patrones:
+        for pat in patterns:
             for m in re.finditer(pat, text, re.I):
-                out.append(text[max(0, m.start() - antes): m.end() + despues])
-                if len(out) >= maximo:
+                out.append(text[max(0, m.start() - before): m.end() + after])
+                if len(out) >= limit:
                     return out
         return out
 
-    # -- por category -----------------------------------------------------
+    # -- per category ------------------------------------------------------
     def _title(self):
         pieces = [t.strip() for t in re.split(r"\n|\s{2,}", self.text[:3000]) if t.strip()]
         candidates = []
@@ -115,17 +115,17 @@ class TextLocator:
             if not letters:
                 continue
             upper_ratio = sum(c.isupper() for c in letters) / len(letters)
-            kind = self.TIPO.search(t)
+            kind = self.KIND.search(t)
             if kind and upper_ratio > 0.7:
-                return [t[:list(self.TIPO.finditer(t))[-1].end()].strip()]
+                return [t[:list(self.KIND.finditer(t))[-1].end()].strip()]
             if kind or upper_ratio > 0.85:
                 candidates.append((bool(kind), upper_ratio, t))
         if candidates:
             candidates.sort(key=lambda c: (c[0], c[1]), reverse=True)
             best = candidates[0][2]
-            fin = list(self.TIPO.finditer(best))
-            return [best[:fin[-1].end()].strip() if fin else best]
-        # Respaldo: la clausula definitoria del cuerpo
+            end = list(self.KIND.finditer(best))
+            return [best[:end[-1].end()].strip() if end else best]
+        # Fallback: the defining clause in the body
         m = re.search(r"(?i)\bthis\s+(.{0,70}?\b(?:agreement|contract|licen[cs]e))\b",
                       self.text[:4000])
         return [m.group(1).strip().upper()] if m else [pieces[0] if pieces else ""]
@@ -133,14 +133,14 @@ class TextLocator:
     def _parties(self):
         candidates = []
         for m in re.finditer(r"(?is)\b(?:by\s+and\s+between|between)\b(.{0,900}?)"
-                             r"(?:\bwitnesseth\b|\brecitals\b|\n\s*\n|$)", self.portada):
+                             r"(?:\bwitnesseth\b|\brecitals\b|\n\s*\n|$)", self.front):
             if len(m.group(1).strip()) >= 30:
                 candidates.append(m.group(1))
-        # Respaldo: el preambulo entero, where igual estan los alias entre parentesis
-        candidates.append(self.portada[:4000])
+        # Fallback: the whole preamble, where the parenthesised aliases live anyway
+        candidates.append(self.front[:4000])
         return candidates
 
-    # -- interfaz ----------------------------------------------------------
+    # -- interface ---------------------------------------------------------
     def fragments(self, category):
         k = key_of(category)
         if k == "document name":
@@ -148,24 +148,24 @@ class TextLocator:
         if k == "parties":
             return self._parties()
         if k in DATE_ANCHORS:
-            v = self._after_anchor(DATE_ANCHORS[k], self.portada, AFTER_DATE,
-                                 antes=BEFORE_DATE.get(k, 0))
+            v = self._after_anchor(DATE_ANCHORS[k], self.front, AFTER_DATE,
+                                   before=BEFORE_DATE.get(k, 0))
             if k == "effective date":
-                # Muchos contracts no distinguen ambas fechas: si la etiqueta
-                # no rindio nada, vale la del preambulo.
+                # Many contracts do not distinguish the two dates: if the label
+                # yielded nothing, the one in the preamble will do.
                 v = v + self._after_anchor(DATE_ANCHORS["agreement date"],
-                                         self.portada, AFTER_DATE)
-            return v or [self.portada[:2500]]
+                                           self.front, AFTER_DATE)
+            return v or [self.front[:2500]]
         if k in ANCHORS:
             return self._windows(ANCHORS[k])
-        # Sin estrategia de localizacion para esta category. Devolver el
-        # documento entero seria mentir: cualquier regla encontraria "algo".
-        # La sheet lo marker como pendiente de la capa de retrieval.
+        # No location strategy for this category. Returning the whole document
+        # would be a lie: any rule would then find "something". The sheet marks
+        # it as pending on the retrieval layer instead.
         return []
 
-    SOPORTADAS = {"document name", "parties", "agreement date",
-                  "effective date", "governing law",
-                  "notice period to terminate renewal", "renewal term"}
+    SUPPORTED = {"document name", "parties", "agreement date",
+                 "effective date", "governing law",
+                 "notice period to terminate renewal", "renewal term"}
 
     def supports(self, category):
-        return key_of(category) in self.SOPORTADAS
+        return key_of(category) in self.SUPPORTED

@@ -1,0 +1,101 @@
+{
+  "contract": "TALCOTTRESOLUTIONLIFEINSURANCECO-SEPARATEACCOUNTTWELVE_04_30_2020-EX-99.8(L)-SERVICE AGREEMENT",
+  "rows": [
+    {
+      "category": "Document Name",
+      "bucket": "rule",
+      "state": "found",
+      "value": "AGREEMENT",
+      "text": "AGREEMENT",
+      "confidence": 71.7,
+      "confidence_kind": "clause",
+      "start": null,
+      "engine": "rule",
+      "clause_accuracy": 71.7
+    },
+    {
+      "category": "Agreement Date",
+      "bucket": "rule",
+      "state": "found",
+      "value": "9/28/04",
+      "text": "entered into as of 9/28/2004 by and among The Victory Portfolios (the \"Trust\"), a Delaware statutory trust, on behalf of those series identified on Schedule A to this Agreement individually and not jointly (such series being individual re",
+      "confidence": 73.6,
+      "confidence_kind": "clause",
+      "start": null,
+      "engine": "rule",
+      "clause_accuracy": 73.6
+    },
+    {
+      "category": "Effective Date",
+      "bucket": "rule",
+      "state": "found",
+      "value": "9/28/04",
+      "text": "entered into as of 9/28/2004 by and among The Victory Portfolios (the \"Trust\"), a Delaware statutory trust, on behalf of those series identified on Schedule A to this Agreement individually and not jointly (such series being individual re",
+      "confidence": 68.0,
+      "confidence_kind": "clause",
+      "start": null,
+      "engine": "rule",
+      "clause_accuracy": 68.0
+    },
+    {
+      "category": "Governing Law",
+      "bucket": "rule",
+      "state": "found",
+      "value": "Ohio",
+      "text": ": The Victory Portfolios 3435 Stelzer Road Columbus OH 43219 Attention: President If to Administrator: Hartford Life Insurance Company 200 Hopmeadow Street Simsbury, CT 06089 Attention: James Davey A notice given pursuant to this Section 16 shall be deemed given immediately when delivered personally",
+      "confidence": 91.0,
+      "confidence_kind": "clause",
+      "start": null,
+      "engine": "rule",
+      "clause_accuracy": 91.0
+    },
+    {
+      "category": "License Grant",
+      "bucket": "retrieval",
+      "state": "absent",
+      "value": null,
+      "text": null,
+      "confidence": 88.88888888888889,
+      "confidence_kind": "row",
+      "start": null,
+      "engine": "presence",
+      "clause_accuracy": 77.1103896103896
+    },
+    {
+      "category": "Audit Rights",
+      "bucket": "retrieval",
+      "state": "found",
+      "value": "present",
+      "text": null,
+      "confidence": 51.515151515151516,
+      "confidence_kind": "row",
+      "start": null,
+      "engine": "presence",
+      "clause_accuracy": 74.62260301917584
+    },
+    {
+      "category": "Cap on Liability",
+      "bucket": "human",
+      "state": "review",
+      "value": null,
+      "text": null,
+      "confidence": 50.0,
+      "confidence_kind": "row",
+      "start": null,
+      "engine": "presence",
+      "clause_accuracy": 84.31855500821018
+    },
+    {
+      "category": "Insurance",
+      "bucket": "retrieval",
+      "state": "absent",
+      "value": null,
+      "text": null,
+      "confidence": 92.7536231884058,
+      "confidence_kind": "row",
+      "start": null,
+      "engine": "presence",
+      "clause_accuracy": 75.6043956043956
+    }
+  ]
+}

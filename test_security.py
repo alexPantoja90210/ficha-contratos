@@ -28,8 +28,9 @@ from pathlib import Path
 DOC_BUDGET_MS   = 250
 FIELD_BUDGET_MS = 50
 DOC_SCALE   = ("locator", "measure_rules")
-LOCAL = {"measure_rules", "locator", "text_rules", "presence", "retrieval",
-         "scope", "sheet", "buckets"}
+# Derived from what is actually on disk, so a new module in the repo is never
+# reported as an external dependency just because this list went stale.
+LOCAL = {p.stem for p in Path(".").glob("*.py")}
 
 ADVERSARIAL = [
     "a" * 60000,

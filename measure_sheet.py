@@ -45,10 +45,10 @@ def has_span(row, cat):
             return bool(v)
     return None
 
-def main(ruta_json, ruta_csv):
-    contracts = json.loads(Path(ruta_json).read_text(encoding="utf-8"))
+def main(corpus_path, clauses_path):
+    contracts = json.loads(Path(corpus_path).read_text(encoding="utf-8"))
     rows = list(csv.DictReader(io.StringIO(
-        Path(ruta_csv).read_text(encoding="utf-8-sig", errors="replace"))))
+        Path(clauses_path).read_text(encoding="utf-8-sig", errors="replace"))))
     stem = lambda n: n[:-4] if n.lower().endswith(".pdf") else n
 
     inside, _ = decide()
@@ -97,17 +97,15 @@ def main(ruta_json, ruta_csv):
         if n:
             print(f"{f['category']:36}{f['engine']:11}{b:>6}{n:>5}{100*b/n:>6.0f}%")
 
-    bien_tot = sum(b for b, _ in by_sheet)
-    print(f"\nrows correct: {bien_tot}/{total_rows} = "
-          f"{100*bien_tot/total_rows:.1f}%")
+    total_ok = sum(b for b, _ in by_sheet)
+    print(f"\nrows correct: {total_ok}/{total_rows} = "
+          f"{100*total_ok/total_rows:.1f}%")
 
     dist = Counter(round(10 * b / n) for b, n in by_sheet)
     print("\nsheets by share of rows correct:")
-    acum = 0
     for k in sorted(dist, reverse=True):
-        acum += dist[k]
-        barra = "#" * dist[k]
-        print(f"  {k*10:>3}% {dist[k]:>4} sheets  {barra}")
+        bar = "#" * dist[k]
+        print(f"  {k*10:>3}% {dist[k]:>4} sheets  {bar}")
     perfect = sum(1 for b, n in by_sheet if b == n)
     print(f"\nsheets with no errors at all: {perfect} of {len(by_sheet)} "
           f"({100*perfect/len(by_sheet):.0f}%)")

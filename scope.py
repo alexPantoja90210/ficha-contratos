@@ -25,8 +25,8 @@ MIN_RULE      = 65.0
 MIN_BALANCED = 70.0
 MIN_RECALL     = 70.0
 
-# Acierto del parseo naive y del producto, misma particion de held_out.
-# Fuente: baseline_ingenuo.py y medir_ficha.py.
+# Accuracy of the naive parse and of the product, same held_out partition.
+# Source: baseline_naive.py and measure_sheet.py.
 NAIVE = {
     "Document Name": 5, "Governing Law": 38, "Cap On Liability": 42,
     "Agreement Date": 53, "License Grant": 55, "Audit Rights": 56,
@@ -41,20 +41,22 @@ PRODUCT = {
 }
 
 def beats_naive(cat):
-    """None cuando no hay medicion del naive para esa category."""
+    """None when there is no naive measurement for that category."""
     if cat not in NAIVE:
         return None
     return PRODUCT[cat] > NAIVE[cat]
 
-# acierto de punta a punta medido en medir_e2e.py
+# End-to-end accuracy as measure_e2e.py prints it over the 510 contracts.
+# These are transcribed figures, so they drift if nobody re-runs the script.
+# measure_e2e.py is the source; if the two disagree, the script is right.
 RULES_MEASURED = {
     "Governing Law":                      91.0,
     "Agreement Date":                     73.6,
-    "Document Name":                      71.9,
+    "Document Name":                      71.7,
     "Effective Date":                      68.0,
-    "Notice Period to Terminate Renewal":  61.2,
-    "Renewal Term":                        60.6,
-    "Parties":                              5.8,
+    "Notice Period to Terminate Renewal":  42.9,
+    "Renewal Term":                        48.8,
+    "Parties":                              4.6,
 }
 
 def decide(path="retrieval_model.json"):
@@ -63,36 +65,36 @@ def decide(path="retrieval_model.json"):
 
     inside, outside = [], []
     for cat, pct in RULES_MEASURED.items():
-        row = dict(category=cat, engine="rule", measure=pct, criterion="acierto e2e",
-                    naive=NAIVE.get(cat))
-        gana = beats_naive(cat)
-        (inside if pct >= MIN_RULE and gana is not False else outside).append(row)
+        row = dict(category=cat, engine="rule", measure=pct,
+                   criterion="end-to-end accuracy", naive=NAIVE.get(cat))
+        beats = beats_naive(cat)
+        (inside if pct >= MIN_RULE and beats is not False else outside).append(row)
 
     for cat, r in perf.items():
         row = dict(category=cat, engine="presence", measure=r["balanced"],
-                    recall=r["recall"], criterion="balanced y recall",
-                    naive=NAIVE.get(cat))
-        gana = beats_naive(cat)
+                   recall=r["recall"], criterion="balanced accuracy and recall",
+                   naive=NAIVE.get(cat))
+        beats = beats_naive(cat)
         if (r["balanced"] >= MIN_BALANCED and r["recall"] >= MIN_RECALL
-                and gana is not False):
+                and beats is not False):
             inside.append(row)
         else:
             outside.append(row)
 
-    inside.sort(key=lambda f: -f["measure"])
-    outside.sort(key=lambda f: -f["measure"])
+    inside.sort(key=lambda r: -r["measure"])
+    outside.sort(key=lambda r: -r["measure"])
     return inside, outside
 
 if __name__ == "__main__":
     inside, outside = decide()
     print(f"IN SCOPE ({len(inside)})")
-    for f in inside:
-        ing = f"  naive {f['naive']}%" if f.get("naive") is not None else ""
-        print(f"  {f['category']:36}{f['engine']:11}{f['measure']:5.1f}%{ing}")
+    for r in inside:
+        nv = f"  naive {r['naive']}%" if r.get("naive") is not None else ""
+        print(f"  {r['category']:36}{r['engine']:11}{r['measure']:5.1f}%{nv}")
     print(f"\nOUT OF SCOPE ({len(outside)}) -- with its number, so the decision can be argued with")
-    for f in outside:
-        rec = f"  recall {f['recall']:.0f}%" if "recall" in f else ""
-        ing = (f"  LOSES to the naive parse ({f['naive']}%)"
-               if f.get("naive") is not None and PRODUCT.get(f["category"], 0) <= f["naive"]
-               else "")
-        print(f"  {f['category']:36}{f['engine']:11}{f['measure']:5.1f}%{rec}{ing}")
+    for r in outside:
+        rec = f"  recall {r['recall']:.0f}%" if "recall" in r else ""
+        nv = (f"  LOSES to the naive parse ({r['naive']}%)"
+              if r.get("naive") is not None and PRODUCT.get(r["category"], 0) <= r["naive"]
+              else "")
+        print(f"  {r['category']:36}{r['engine']:11}{r['measure']:5.1f}%{rec}{nv}")

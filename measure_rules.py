@@ -47,7 +47,7 @@ DATE_ORDINAL = re.compile(
     r"(?i)\b(\d{1,2})(?:st|nd|rd|th)?\s+day\s+of\s+"
     r"(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?,?\s*(\d{4})\b")
 DATE_SLASHES = re.compile(r"\b(\d{1,2})/(\d{1,2})/(\d{2,4})\b")
-# "1 August 2019", "20t h day of November, 2018" (noise de OCR en el ordinal)
+# "1 August 2019", "20t h day of November, 2018" (OCR noise in the ordinal)
 DATE_DAY_MONTH = re.compile(
     r"(?i)\b(\d{1,2})\s*(?:st|nd|rd|th|t\s*h)?\s*(?:day\s+of\s+)?"
     r"(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?,?\s*(\d{4})\b")
@@ -87,15 +87,15 @@ NUMBERS = {"one":1,"two":2,"three":3,"four":4,"five":5,"six":6,"seven":7,
            "eight":8,"nine":9,"ten":10,"twelve":12,"fifteen":15,"twenty":20,
            "thirty":30,"forty":40,"forty-five":45,"sixty":60,"ninety":90,
            "hundred":100,"eighteen":18,"twenty-four":24,"thirty-six":36}
-# "two (2) years" -> el digito entre parentesis manda sobre la palabra
+# "two (2) years" -> the parenthesised digit wins over the word
 TERM_RE = re.compile(
     r"(?i)\b(?:(\d+)|([a-z]+(?:-[a-z]+)?))\s*(?:\(\s*(\d+)\s*\))?\s*"
     r"(day|week|month|year)s?\b")
 
-def term_in(text, unidades):
+def term_in(text, units):
     for m in TERM_RE.finditer(text):
-        unidad = m.group(4).lower()
-        if unidad not in unidades:
+        unit = m.group(4).lower()
+        if unit not in units:
             continue
         if m.group(3):
             n = int(m.group(3))
@@ -104,20 +104,20 @@ def term_in(text, unidades):
         else:
             n = NUMBERS.get(m.group(2).lower())
         if n:
-            return f"{n} {unidad}{'s' if n != 1 else ''}"
+            return f"{n} {unit}{'s' if n != 1 else ''}"
     return None
 
-def term_near(text, unidades, claves, ventana=160):
-    """El term_in mas cercano a una de las palabras key_of. El parrafo suele traer
-    varios (el termino de renovacion y el preaviso); el primero no es el bueno."""
-    anclas = [m.start() for c in claves
-              for m in re.finditer(c, text, re.I)]
-    if not anclas:
+def term_near(text, units, keywords, window=160):
+    """The term nearest one of the keywords. A paragraph usually carries several
+    (the renewal term and the notice period); the first is not the right one."""
+    anchors = [m.start() for c in keywords
+               for m in re.finditer(c, text, re.I)]
+    if not anchors:
         return None
     best = None
     for m in TERM_RE.finditer(text):
-        unidad = m.group(4).lower()
-        if unidad not in unidades:
+        unit = m.group(4).lower()
+        if unit not in units:
             continue
         if m.group(3):
             n = int(m.group(3))
@@ -127,9 +127,9 @@ def term_near(text, unidades, claves, ventana=160):
             n = NUMBERS.get((m.group(2) or "").lower())
         if not n:
             continue
-        d = min(abs(m.start() - a) for a in anclas)
-        if d <= ventana and (best is None or d < best[0]):
-            best = (d, f"{n} {unidad}{'s' if n != 1 else ''}")
+        d = min(abs(m.start() - a) for a in anchors)
+        if d <= window and (best is None or d < best[0]):
+            best = (d, f"{n} {unit}{'s' if n != 1 else ''}")
     return best[1] if best else None
 
 
@@ -145,9 +145,9 @@ def rule_renewal(frs):
     return None
 
 def rule_notice(frs):
-    claves = [r"notice", r"non-?renewal", r"notif", r"prior to the (?:end|expir)"]
-    for f in frs:                      # el preaviso casi siempre va en dias
-        v = term_near(f, {"day"}, claves) or term_near(f, {"month"}, claves)
+    keywords = [r"notice", r"non-?renewal", r"notif", r"prior to the (?:end|expir)"]
+    for f in frs:                      # the notice period is almost always in days
+        v = term_near(f, {"day"}, keywords) or term_near(f, {"month"}, keywords)
         if v:
             return v
     for f in frs:
@@ -163,9 +163,9 @@ TERM_OF_RE = re.compile(
     r"(month|year)s?\b")
 
 def rule_expiration(frs, fecha_efectiva):
-    """Expiration Date casi nunca esta escrita: se calcula.
-    El contract dice 'continue for five (5) years following the Effective Date'
-    y el anotador anoto la fecha resultante."""
+    """Expiration Date is almost never written down: it is computed.
+    The contract says 'continue for five (5) years following the Effective Date'
+    and the annotator recorded the resulting date."""
     from datetime import date
     text = " ".join(frs)
     if re.search(r"(?i)end of the (?:then[- ])?current calendar year", text) and fecha_efectiva:
@@ -236,30 +236,30 @@ JURISDICTIONS = ("Alabama Alaska Arizona Arkansas California Colorado Connecticu
   "Austria","Brazil","Mexico","Russia","Poland","Portugal","Greece","Turkey",
   "Luxembourg","Bermuda","Cayman Islands","New Zealand","South Africa",
   "United Kingdom","Puerto Rico","Manitoba","Saskatchewan","Nova Scotia"]
-# Se held-outn de mas largo a mas corto para que "New York" gane sobre "York".
-# El desempate va por el nombre: sorted() sobre un set hereda el orden de
-# iteracion del set, y Python aleatoriza el hash de cadenas por proceso, asi
-# que sin esto dos jurisdicciones del mismo largo se alternan entre corridas
-# y la cifra medida cambia sola.
+# Sorted longest to shortest so that "New York" wins over "York". The tie-break
+# is the name itself: sorted() over a set inherits the set iteration order, and
+# Python randomizes string hashing per process, so without this two
+# jurisdictions of the same length swap places between runs and the measured
+# figure changes on its own.
 JURISDICTIONS = sorted(set(JURISDICTIONS), key=lambda j: (-len(j), j))
 
 def rule_law(frs):
     text = " ".join(frs)
-    # 1) el name pegado a la frase de ley aplicable
+    # 1) the name attached to the governing-law phrase
     cerca = re.search(r"(?i)laws?\s+of\s+(?:the\s+)?(?:State|Commonwealth|Province)?"
                       r"\s*of\s*([A-Z][\w ]{2,30})", text)
     if cerca:
         for e in JURISDICTIONS:
             if cerca.group(1).strip().lower().startswith(e.lower()):
                 return e
-    # 2) cualquier jurisdiccion nombrada en el fragment
+    # 2) any jurisdiction named anywhere in the fragment
     for e in JURISDICTIONS:
         if re.search(r"\b" + re.escape(e) + r"\b", text, re.I):
             return e
     return None
 
 # ---------- comparadores -----------------------------------------------------
-# En CUAD hay respuestas tachadas por confidencialidad: "[* * *]", "[]/[]/[][]"
+# CUAD contains answers redacted for confidentiality: "[* * *]", "[]/[]/[][]"
 REDACTED = re.compile(r"[\[\]\*\s/\-]+")
 
 DAYS_PER_UNIT = {"day": 1, "week": 7, "month": 30, "year": 365}
@@ -282,8 +282,8 @@ def same_contains(pred, real):
         return False
     if pred.lower() in real.lower() or real.lower() in pred.lower():
         return True
-    # "1 year" y "12 months" son el mismo term_in: la diferencia era del comparador,
-    # no de la regla.
+    # "1 year" and "12 months" are the same term: the difference was in the
+    # comparator, not in the rule.
     dp, dr = to_days(pred), to_days(real)
     return dp is not None and dp == dr
 
@@ -303,9 +303,9 @@ RULES = [
     ("Agreement Date",                     rule_date,      same_date,     "rule"),
     ("Effective Date",                     rule_date,      same_date,     "rule"),
     ("Governing Law",                      rule_law,        same_contains,  "rule"),
-    ("Expiration Date",                    "derivada",       same_date,     "derivada"),
-    ("Renewal Term",                       rule_renewal, same_contains,  "hibrido"),
-    ("Notice Period To Terminate Renewal", rule_notice,   same_contains,  "hibrido"),
+    ("Expiration Date",                    "derived",        same_date,     "derived"),
+    ("Renewal Term",                       rule_renewal, same_contains,  "hybrid"),
+    ("Notice Period To Terminate Renewal", rule_notice,   same_contains,  "hybrid"),
 ]
 
 def main(path):
@@ -314,27 +314,27 @@ def main(path):
     print(f"contracts: {len(rows)}\n")
     print(f"{'category':36}{'bucket':>10}{'with value':>11}{'correct':>9}{'%':>7}")
     summary = []
-    for cat, regla, compara, bucket_of in RULES:
+    for cat, rule, compare, bucket in RULES:
         col = answer_column(rows[0], cat)
-        con = ok = 0
+        with_value = ok = 0
         failures = []
         for row in rows:
             real = (row.get(col) or "").strip()
             if not real or REDACTED.fullmatch(real):
-                continue   # respuesta redactada en el corpus: no es decidible
-            con += 1
-            if regla == "derivada":
-                efectiva = rule_date(fragments(row.get("Effective Date")))
-                pred = rule_expiration(fragments(row.get(cat)), efectiva)
+                continue   # answer redacted in the corpus: not decidable
+            with_value += 1
+            if rule == "derived":
+                effective = rule_date(fragments(row.get("Effective Date")))
+                pred = rule_expiration(fragments(row.get(cat)), effective)
             else:
-                pred = regla(fragments(row.get(cat)))
-            if compara(pred, real):
+                pred = rule(fragments(row.get(cat)))
+            if compare(pred, real):
                 ok += 1
             elif len(failures) < 3:
                 failures.append((real[:38], (pred or "-")[:38]))
-        pct = 100 * ok / con if con else 0.0
-        summary.append((cat, bucket_of, con, ok, pct, failures))
-        print(f"{cat:36}{bucket_of:>10}{con:>11}{ok:>9}{pct:>6.1f}%")
+        pct = 100 * ok / with_value if with_value else 0.0
+        summary.append((cat, bucket, with_value, ok, pct, failures))
+        print(f"{cat:36}{bucket:>10}{with_value:>11}{ok:>9}{pct:>6.1f}%")
     print("\n--- sample failures (expected | produced) ---")
     for cat, _, _, _, pct, failures in summary:
         if pct < 95 and failures:

@@ -11,60 +11,61 @@ the tables at the top of this file.
 import csv, io, json, re, sys, collections
 from pathlib import Path
 
-# --- La decision. Editar aqui. -------------------------------------------
-# regla      : la respuesta tiene forma verificable y aparece en sitio previsible
-# hibrido    : la retrieval locates la clausula, la regla normalizes el value
-# retrieval: pregunta de presence; el sistema marker encontrada/ausente solo
-# humano     : pregunta de presence where un "ausente" equivocado cuesta caro;
-#              el sistema propone, una persona confirma
+# --- The decision. Edit here. --------------------------------------------
+# rule      : the answer has a verifiable shape and sits in a predictable place
+# hybrid    : retrieval locates the clause, the rule normalizes the value
+# retrieval : a presence question; the system marks present/absent on its own
+# human     : a presence question where a wrong "absent" is expensive;
+#             the system proposes, a person confirms
 
 RULE = {
     "Document Name": dict(
-        where="Primeros 2000 caracteres",
+        where="First 2000 characters",
         pattern=r"(?im)^\s*([A-Z][A-Z \-&']{6,})\s*$|\b([A-Z][\w ]*?AGREEMENT)\b",
-        validates="cadena no vacia", measured_pct=97.6, measured_of=510),
-    # movida a MODEL tras medir de punta a punta: 86.4% con el parrafo ya
-    # localizado, 3.6% teniendo que sacarla del contract raw.
+        validates="non-empty string", measured_pct=97.6, measured_of=510),
+    # Moved to MODEL after measuring end to end: 86.4% with the paragraph
+    # already located, 3.6% having to pull it out of the raw contract.
     "Parties (dropped from rule bucket)": dict(
-        where="Parrafo inicial",
+        where="Opening paragraph",
         pattern=r"(?i)\b(?:by and between|between)\b(.{0,400}?)(?:\bwitnesseth\b|\brecitals\b|\n\n|\.\s+[A-Z])",
-        validates="al menos 2 entidades", measured_pct=86.4, measured_of=509),
+        validates="at least 2 entities", measured_pct=86.4, measured_of=509),
     "Agreement Date": dict(
-        where="Parrafo inicial",
+        where="Opening paragraph",
         pattern=r"(?i)\bdated(?:\s+as\s+of)?\s+(.{0,40}?\d{4})",
-        validates="fecha parseable", measured_pct=85.5, measured_of=463),
+        validates="parseable date", measured_pct=85.5, measured_of=463),
     "Effective Date": dict(
-        where="Parrafo inicial o definiciones",
+        where="Opening paragraph or definitions",
         pattern=r"(?i)\beffective\s+(?:date|as\s+of)\b[^.]{0,60}?((?:\d{1,2}/\d{1,2}/\d{2,4})|(?:[A-Z][a-z]+\s+\d{1,2},?\s+\d{4}))",
-        validates="fecha parseable", measured_pct=82.6, measured_of=357),
+        validates="parseable date", measured_pct=82.6, measured_of=357),
     "Governing Law": dict(
-        where="Clausula de ley aplicable",
+        where="Governing law clause",
         pattern=r"(?i)govern(?:ed|ing)\s+(?:by|law).{0,120}?\b(?:State|Commonwealth|Province|laws)\s+of\s+([A-Z][\w ]+)",
-        validates="value inside del catalogo de estados/paises", measured_pct=95.1, measured_of=432),
+        validates="value inside the state/country gazetteer", measured_pct=95.1, measured_of=432),
 }
 
 HYBRID = {
     "Notice Period to Terminate Renewal": dict(
-        locates="clausula de terminacion de la renovacion",
-        normalizes="term_in mas cercano a 'notice'/'non-renewal', unidad dias",
-        validates="numero + unidad",
+        locates="renewal termination clause",
+        normalizes="term nearest to 'notice'/'non-renewal', unit days",
+        validates="number + unit",
         measured_pct=87.0, measured_of=100),
 }
 
-# Medidas contra los 510 contracts de master_clauses.csv. No close on their own.
+# Measured against the 510 contracts in master_clauses.csv. They do not close
+# on their own.
 DERIVED_OR_WEAK = {
     "Expiration Date": dict(
-        note="No esta escrita: se calcula sobre Effective Date + term_in del termino. "
-             "El error se acumula sobre Effective Date (82.6%).",
+        note="Not written down: it is computed from Effective Date + the term. "
+             "The error compounds on top of Effective Date (82.6%).",
         measured_pct=34.4, measured_of=326),
     "Renewal Term": dict(
-        note="Respuestas multivaluadas ('perpetual', '7/22/2019; 7/22/2022') y "
-             "plazos que compiten inside del mismo parrafo.",
+        note="Multi-valued answers ('perpetual', '7/22/2019; 7/22/2022') and "
+             "competing terms inside the same paragraph.",
         measured_pct=61.3, measured_of=163),
 }
 
-# Yes/No where un "ausente" equivocado cambia la economia del trato
-# o frena la transaccion -> no se cierra sin persona.
+# Yes/No questions where a wrong "absent" changes the economics of the deal
+# or stalls the transaction -> never closed without a person.
 HUMAN = {
     "Cap on Liability", "Uncapped Liability", "Liquidated Damages",
     "IP Ownership Assignment", "Joint IP Ownership", "Source Code Escrow",
@@ -72,12 +73,12 @@ HUMAN = {
     "Most Favored Nation", "Minimum Commitment",
 } | set(DERIVED_OR_WEAK)
 
-# Categorias where la regla se midio y perdio: aqui un modelo si se gana su hora.
+# Categories where the rule was measured and lost: here a model earns its hour.
 MODEL = {
     "Parties": dict(
-        note="Las entidades vienen enredadas con domicilios, descriptores "
-             "societarios y alias. Regla: 3.6% de punta a punta. Un modelo "
-             "leyendo la primera pagina resuelve esto sin esfuerzo.",
+        note="The entities come tangled up with addresses, corporate "
+             "descriptors and aliases. Rule: 3.6% end to end. A model reading "
+             "the first page resolves this without effort.",
         measured_pct=3.6, measured_of=497),
 }
 # --------------------------------------------------------------------------
@@ -86,29 +87,29 @@ def strip_prefix(value: str) -> str:
     return re.sub(r"^[A-Za-z ()incl.]+:\s*", "", value).strip()
 
 def bucket_of(name: str) -> str:
-    if name in MODEL:  return "modelo"
+    if name in MODEL:  return "model"
     if name in RULE:   return "rule"
-    if name in HYBRID: return "hibrido"
-    if name in HUMAN:  return "humano"
+    if name in HYBRID: return "hybrid"
+    if name in HUMAN:  return "human"
     return "retrieval"
 
 def main(source_path: Path, dest_dir: Path) -> int:
     rows = list(csv.reader(io.StringIO(source_path.read_text(encoding="utf-8-sig"))))
     if not rows:
-        print("csv vacio", file=sys.stderr); return 1
+        print("empty csv", file=sys.stderr); return 1
     data = rows[1:]
 
     out = []
     for row in data:
         name = strip_prefix(row[0])
-        c = bucket_of(name)
+        bucket = bucket_of(name)
         record = {
             "category": name,
             "description": strip_prefix(row[1]),
             "cuad_format": strip_prefix(row[2]) or None,
             "cuad_group": strip_prefix(row[3]) if len(row) > 3 else None,
-            "bucket": c,
-            "closes_alone": c != "humano",
+            "bucket": bucket,
+            "closes_alone": bucket != "human",
         }
         record.update(RULE.get(name, {}))
         record.update(HYBRID.get(name, {}))
@@ -135,7 +136,7 @@ def main(source_path: Path, dest_dir: Path) -> int:
                         r["bucket"], r["closes_alone"]])
 
     counts = collections.Counter(r["bucket"] for r in out)
-    for k in ("rule", "hibrido", "modelo", "retrieval", "humano"):
+    for k in ("rule", "hybrid", "model", "retrieval", "human"):
         print(f"{k:14} {counts[k]:2}")
     print(f"{'total':14} {sum(counts.values()):2}")
     print(f"close on their own  {sum(1 for r in out if r['closes_alone']):2}")

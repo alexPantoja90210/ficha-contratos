@@ -7,7 +7,7 @@ No model, no API keys, no database. Under a second per contract, and the only
 dependency is the Python standard library.
 
 ```bash
-python ficha.py contracts.json 433
+python sheet.py contracts.json 433
 ```
 
 ```
@@ -144,8 +144,9 @@ included: CUAD is CC BY 4.0.
 
 | | |
 |---|---|
-| `ficha.py` | the product: contract in, eight-row sheet out |
+| `sheet.py` | the product: contract in, eight-row sheet out |
 | `scope.py` | what is in and what is out, with the criterion and the numbers |
+| `buckets.py` | assigns each of the 41 categories to an extraction bucket |
 | `locator.py` | finds the clause inside the raw contract |
 | `retrieval.py` | learns terms, calibrates thresholds, evaluates |
 | `presence.py` | applies what was learned, with the honesty rules |

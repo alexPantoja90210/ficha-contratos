@@ -28,12 +28,12 @@ import ast, csv, io, json, math, re, sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
-WINDOW, STRIDE = 1600, 800
-TOP_TERMS   = 40
-SPLIT_FRACTIONS  = (0.60, 0.20)    # train, val; el resto es test
+WINDOW, STRIDE  = 1600, 800
+TOP_TERMS       = 40
+SPLIT_FRACTIONS = (0.60, 0.20)    # train, val; the rest is test
 
 WORD_RE = re.compile(r"[a-z][a-z\-']{2,}")
-STOPWORDS = set("""the and for any all such that this with shall are not或 but its his her
+STOPWORDS = set("""the and for any all such that this with shall are not but its his her
 their which have has had was were been being from into upon under over more most other
 than then them they there these those you your our ous will would may can could should
 each either neither both same very much many few less least also only just even still
@@ -47,10 +47,10 @@ def tokens(text):
 
 
 # ---------- data ------------------------------------------------------------
-def load_data(ruta_json, ruta_csv):
-    contracts = json.loads(Path(ruta_json).read_text(encoding="utf-8"))
+def load_data(corpus_path, clauses_path):
+    contracts = json.loads(Path(corpus_path).read_text(encoding="utf-8"))
     rows = list(csv.DictReader(io.StringIO(
-        Path(ruta_csv).read_text(encoding="utf-8-sig", errors="replace"))))
+        Path(clauses_path).read_text(encoding="utf-8-sig", errors="replace"))))
     stem = lambda n: n[:-4] if n.lower().endswith(".pdf") else n
 
     categories = []
@@ -69,99 +69,100 @@ def load_data(ruta_json, ruta_csv):
         text = contracts.get(stem(f["Filename"]))
         if text is None:
             continue
-        etiquetas, oro = {}, {}
+        labels, gold = {}, {}
         for c, col in categories:
             cell = (f.get(c) or "").strip()
             try:
                 chunks = ast.literal_eval(cell) if cell else []
             except (ValueError, SyntaxError):
                 chunks = [cell] if cell else []
-            etiquetas[c] = bool(chunks)
-            oro[c] = [str(t) for t in chunks]
+            labels[c] = bool(chunks)
+            gold[c] = [str(t) for t in chunks]
         data.append(dict(name=f["Filename"], text=text,
-                          etiquetas=etiquetas, oro=oro))
+                         labels=labels, gold=gold))
     return data, [c for c, _ in categories]
 
 
 def split_by_contract(data):
-    """Corte por contract, determinista y sin azar: por ordered de name."""
+    """Split by contract, deterministic and without randomness: by name."""
     ordered = sorted(data, key=lambda d: d["name"])
     n = len(ordered)
     a, b = int(n * SPLIT_FRACTIONS[0]), int(n * (SPLIT_FRACTIONS[0] + SPLIT_FRACTIONS[1]))
     return ordered[:a], ordered[a:b], ordered[b:]
 
 
-# ---------- aprendizaje de terminos -----------------------------------------
+# ---------- term learning ----------------------------------------------------
 def learn_cues(train, categories):
     bags = {d["name"]: set(tokens(d["text"])) for d in train}
     cues = {}
     for cat in categories:
-        con, sin = Counter(), Counter()
-        n_con = n_sin = 0
+        with_, without = Counter(), Counter()
+        n_with = n_without = 0
         for d in train:
             b = bags[d["name"]]
-            if d["etiquetas"][cat]:
-                con.update(b); n_con += 1
+            if d["labels"][cat]:
+                with_.update(b); n_with += 1
             else:
-                sin.update(b); n_sin += 1
-        if n_con < 5:
+                without.update(b); n_without += 1
+        if n_with < 5:
             cues[cat] = []
             continue
-        puntajes = []
-        for t in set(con) | set(sin):
-            p = (con[t] + 0.5) / (n_con + 1)
-            q = (sin[t] + 0.5) / (n_sin + 1)
-            puntajes.append((math.log(p / q), t))
-        # desempate por el termino: sin esto el corte del top-K cambia por corrida
-        puntajes.sort(key=lambda x: (-x[0], x[1]))
-        cues[cat] = [t for s, t in puntajes[:TOP_TERMS] if s > 0]
+        scores = []
+        for t in set(with_) | set(without):
+            p = (with_[t] + 0.5) / (n_with + 1)
+            q = (without[t] + 0.5) / (n_without + 1)
+            scores.append((math.log(p / q), t))
+        # Tie-break on the term itself: without this the top-K cutoff moves
+        # between runs, because Python randomizes string hashing per process.
+        scores.sort(key=lambda x: (-x[0], x[1]))
+        cues[cat] = [t for s, t in scores[:TOP_TERMS] if s > 0]
     return cues
 
 
-# ---------- puntuacion -------------------------------------------------------
+# ---------- scoring ----------------------------------------------------------
 def windows_of(text):
     return [(i, text[i:i + WINDOW]) for i in range(0, max(1, len(text)), STRIDE)]
 
-def score_windows(text, pistas_cat, cache):
+def score_windows(text, cue_terms, cache):
     """Best window and its score: share of cue terms present."""
-    if not pistas_cat:
+    if not cue_terms:
         return 0.0, None
     if text not in cache:
         cache[text] = [(i, set(tokens(v))) for i, v in windows_of(text)]
     best, where = 0.0, None
-    pistas_set = set(pistas_cat)
+    cue_set = set(cue_terms)
     for i, toks in cache[text]:
-        s = len(pistas_set & toks) / len(pistas_set)
+        s = len(cue_set & toks) / len(cue_set)
         if s > best:
             best, where = s, i
     return best, where
 
 
-MIN_TO_CALIBRATE = 5   # positives en validacion
+MIN_TO_CALIBRATE = 5   # positives in validation
 
 def calibrate(val, categories, cues, cache):
-    """Umbral por category que maximiza la accuracy balanced.
+    """Per-category threshold that maximises balanced accuracy.
 
-    Con fewer than MIN_TO_CALIBRATE positives en validacion el threshold no
-    significa nada: la busqueda se va a los extremos y produce un detector que
-    dice "si" a todo (accuracy 4%) o "no" a todo. Esas categories se marcan
-    como NOT CALIBRATABLE en vez de publicar un numero inventado.
+    With fewer than MIN_TO_CALIBRATE positives in validation the threshold means
+    nothing: the search runs to the extremes and produces a detector that says
+    "yes" to everything (4% accuracy) or "no" to everything. Those categories
+    are marked NOT CALIBRATABLE rather than publishing an invented number.
     """
     thresholds, uncalibrated = {}, set()
     for cat in categories:
-        puntos = [(score_windows(d["text"], cues[cat], cache)[0], d["etiquetas"][cat])
+        points = [(score_windows(d["text"], cues[cat], cache)[0], d["labels"][cat])
                   for d in val]
-        n_pos = sum(1 for _, y in puntos if y)
-        n_neg = len(puntos) - n_pos
+        n_pos = sum(1 for _, y in points if y)
+        n_neg = len(points) - n_pos
         if n_pos < MIN_TO_CALIBRATE or n_neg < MIN_TO_CALIBRATE:
             thresholds[cat] = None
             uncalibrated.add(cat)
             continue
         best = (0.0, 0.5)
         for u in [i / 40 for i in range(1, 41)]:
-            vp = sum(1 for s, y in puntos if y and s >= u)
-            vn = sum(1 for s, y in puntos if not y and s < u)
-            bal = (vp / n_pos + vn / n_neg) / 2
+            tp = sum(1 for s, y in points if y and s >= u)
+            tn = sum(1 for s, y in points if not y and s < u)
+            bal = (tp / n_pos + tn / n_neg) / 2
             if bal > best[0]:
                 best = (bal, u)
         thresholds[cat] = best[1]
@@ -173,43 +174,43 @@ def evaluate(test, categories, cues, thresholds, cache, uncalibrated):
     for cat in categories:
         if cat in uncalibrated:
             continue
-        vp = vn = fp = fn = 0
-        correctn_lugar = con_lugar = 0
+        tp = tn = fp = fn = 0
+        located_ok = located_n = 0
         for d in test:
             s, where = score_windows(d["text"], cues[cat], cache)
             pred = s >= thresholds[cat]
-            real = d["etiquetas"][cat]
+            real = d["labels"][cat]
             if real and pred:
-                vp += 1
-                oro = d["oro"][cat]
-                if oro and where is not None:
-                    con_lugar += 1
+                tp += 1
+                gold = d["gold"][cat]
+                if gold and where is not None:
+                    located_n += 1
                     chunk = d["text"][where:where + WINDOW]
-                    key_of = " ".join(oro[0].split())[:60]
-                    if key_of and key_of in " ".join(chunk.split()):
-                        correctn_lugar += 1
+                    needle = " ".join(gold[0].split())[:60]
+                    if needle and needle in " ".join(chunk.split()):
+                        located_ok += 1
             elif real:
                 fn += 1
             elif pred:
                 fp += 1
             else:
-                vn += 1
-        n_pos, n_neg = vp + fn, vn + fp
+                tn += 1
+        n_pos, n_neg = tp + fn, tn + fp
         if not n_pos or not n_neg:
             continue
-        sensitivity, specificity = vp / n_pos, vn / n_neg
+        sensitivity, specificity = tp / n_pos, tn / n_neg
         rows.append(dict(
             category=cat, n=n_pos + n_neg, positives=n_pos,
             floor=100 * max(n_pos, n_neg) / (n_pos + n_neg),
-            accuracy=100 * (vp + vn) / (n_pos + n_neg),
+            accuracy=100 * (tp + tn) / (n_pos + n_neg),
             balanced=100 * (sensitivity + specificity) / 2,
             recall=100 * sensitivity, specificity=100 * specificity,
-            located_pct=100 * correctn_lugar / con_lugar if con_lugar else None))
+            located_pct=100 * located_ok / located_n if located_n else None))
     return rows
 
 
-def main(ruta_json, ruta_csv):
-    data, categories = load_data(ruta_json, ruta_csv)
+def main(corpus_path, clauses_path):
+    data, categories = load_data(corpus_path, clauses_path)
     train, val, test = split_by_contract(data)
     print(f"contracts {len(data)}  train {len(train)}  val {len(val)}  test {len(test)}")
     print(f"presence categories: {len(categories)}\n")
@@ -228,15 +229,15 @@ def main(ruta_json, ruta_csv):
               f"{r['accuracy']:>6.0f}%{r['balanced']:>7.1f}%{r['recall']:>7.0f}%{ub:>7}")
 
     bal = sum(r["balanced"] for r in rows) / len(rows)
-    sobre = sum(1 for r in rows if r["balanced"] > 55)
-    print(f"\nexactitud balanced media : {bal:.1f}%   (chance is 50%)")
-    print(f"categories above 55%: {sobre} of {len(rows)}")
+    above = sum(1 for r in rows if r["balanced"] > 55)
+    print(f"\nmean balanced accuracy : {bal:.1f}%   (chance is 50%)")
+    print(f"categories above 55%: {above} of {len(rows)}")
     if uncalibrated:
         print(f"\nNOT CALIBRATABLE ({len(uncalibrated)}): fewer than "
               f"{MIN_TO_CALIBRATE} positives in validation; the threshold means "
               f"nothing.\n  " + ", ".join(sorted(uncalibrated)))
         print("  These go straight to human review: they are so rare that "
-              "reviewlas a mano cuesta poco.")
+              "checking them by hand costs little.")
     Path("retrieval_model.json").write_text(
         json.dumps(dict(thresholds=thresholds, cues=cues, test=rows),
                    ensure_ascii=False, indent=2), encoding="utf-8")

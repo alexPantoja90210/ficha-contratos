@@ -27,9 +27,9 @@ DATE_RE = re.compile(
     r"(?:st|nd|rd|th)?,?\s*\d{4}|\d{1,2}/\d{1,2}/\d{2,4})")
 
 def naive_title(t):
-    for linea in t.splitlines():
-        if linea.strip():
-            return linea.strip()
+    for line in t.splitlines():
+        if line.strip():
+            return line.strip()
     return None
 
 def naive_date(t):
@@ -68,43 +68,43 @@ def has_span(row, cat):
                 v = [v] if v else []
             return bool(v)
 
-# lo que mide medir_ficha.py para el producto, sobre la misma particion
+# what measure_sheet.py measures for the product, on the same partition
 PRODUCT = {"Document Name": 66, "Agreement Date": 74, "Effective Date": 67,
             "Governing Law": 90, "Cap on Liability": 86, "License Grant": 76,
             "Warranty Duration": 76, "Insurance": 76,
             "No-Solicit of Employees": 80, "Audit Rights": 73}
 
-def main(ruta_json, ruta_csv):
-    contracts = json.loads(Path(ruta_json).read_text(encoding="utf-8"))
+def main(corpus_path, clauses_path):
+    contracts = json.loads(Path(corpus_path).read_text(encoding="utf-8"))
     rows = list(csv.DictReader(io.StringIO(
-        Path(ruta_csv).read_text(encoding="utf-8-sig", errors="replace"))))
+        Path(clauses_path).read_text(encoding="utf-8-sig", errors="replace"))))
     stem = lambda n: n[:-4] if n.lower().endswith(".pdf") else n
     held_out = set(sorted(contracts)[int(len(contracts) * 0.8):])
     inside, _ = decide()
 
-    print(f"{'category':30}{'naive':>9}{'producto':>10}{'gana':>8}")
+    print(f"{'category':30}{'naive':>9}{'product':>10}{'gain':>8}")
     total_i = total_p = n_cat = 0
     for f in inside:
         cat = f["category"]
         k = key_of(cat)
         ok_count = n = 0
         for row in rows:
-            nom = stem(row["Filename"])
-            text = contracts.get(nom)
-            if text is None or nom not in held_out:
+            name = stem(row["Filename"])
+            text = contracts.get(name)
+            if text is None or name not in held_out:
                 continue
             if k in NAIVE_RULES:
                 col = column_for(rows[0], cat)
                 real = (row.get(col) or "").strip() if col else ""
                 if not real or R.REDACTED.fullmatch(real):
                     continue
-                regla, cmp_ = NAIVE_RULES[k]
-                ok = cmp_(regla(text), real)
+                rule, cmp_ = NAIVE_RULES[k]
+                ok = cmp_(rule(text), real)
             else:
                 real = has_span(row, cat)
                 if real is None:
                     continue
-                ok = (False == real)      # el naive dice "not present" siempre
+                ok = (real is False)      # the naive parse always says "not present"
             n += 1
             ok_count += ok
         pct = 100 * ok_count / n if n else 0
