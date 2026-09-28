@@ -185,10 +185,11 @@ Open the page and paste the Function URL into the field at the top; it is kept i
 that browser only. To bake it in instead, set `ENDPOINT` at the top of the
 `<script>` block in `web/index.html` and upload again — then the field disappears.
 
-An S3 website endpoint is plain HTTP. A browser on an HTTPS page will not call an
-HTTPS Function URL from an HTTP page without complaint in some configurations; if
-you want HTTPS end to end, put CloudFront in front of the bucket. For a demo you
-open yourself, HTTP is enough.
+An S3 website endpoint is plain HTTP. That is fine here: mixed content is an
+HTTPS page loading an HTTP resource, and this is the other way round — an HTTP
+page calling an HTTPS Function URL, which every browser allows. What you lose is
+the padlock on the page itself. Put CloudFront in front of the bucket if you want
+HTTPS end to end, or if you are going to put the link on a CV.
 
 ## Updating
 
