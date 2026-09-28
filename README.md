@@ -160,4 +160,4 @@ included: CUAD is CC BY 4.0.
 
 This project was mapped against the NIST AI Risk Management Framework after it was
 built. It meets most of the MEASURE function and none of GOVERN, which is what a
-solo technical artifact should look like. See [NIST-AI-RMF.md](NIST-AI-RMF.md).
+solo technical artifact should look like. See [NIST-AI-RMF.md](NIST-AI-RMF.md), and [ROADMAP.md](ROADMAP.md) for what it would take to close the open items.
