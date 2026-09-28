@@ -7,14 +7,25 @@ standard library, and it answers in milliseconds.
 
 Everything below was measured, not estimated.
 
-| | |
-|---|---|
-| Deployment package | **34 KB**, 8 modules and 3 data files, no dependencies to vendor |
-| Cold import | **28 ms** (module load, fitted model, scope decision) |
-| Per request, median contract | **5 ms** |
-| Per request, largest contract in CUAD (330 KB) | **100 ms** |
-| Peak memory, largest contract | **7.3 MB** of Python heap, 25 MB RSS |
-| Largest contract as a JSON request body | 334 KB, against Lambda's 6 MB limit — **18x of headroom** |
+Measured locally before deploying, then again on the deployed function:
+
+| | local | on Lambda |
+|---|---|---|
+| Deployment package | **34 KB**, 8 modules and 3 data files, nothing to vendor | same |
+| Initialisation | 28 ms (Python import only) | **121 ms** (runtime bootstrap included) |
+| Per request, median contract | 5 ms | **2.6 ms** |
+| Per request, largest contract in CUAD (330 KB) | 100 ms | — |
+| Peak memory | 7.3 MB of Python heap, 25 MB RSS | **39 MB** of the 512 configured |
+| Largest contract as a JSON request body | 334 KB, against Lambda's 6 MB limit — **18x of headroom** | |
+
+The 28 ms figure times the Python import alone; Lambda's initialisation also
+starts the runtime, which is the whole of the difference. On a cold start both
+are billed together — the first invocation billed 124 ms, the next ones about 3.
+
+**Round trip is a different number from either.** From Mexico to `us-east-1` the
+measured round trip was a median of **273 ms**, p95 443 ms, max 600 ms, against
+2.6 ms of compute. Essentially all of what a reader waits for is the network, and
+the page shows both numbers rather than the flattering one.
 
 Because the package has no third-party code, there is no layer, no container image
 and no `pip install` step. That is a property of the design, and it is the reason
@@ -241,9 +252,35 @@ Serverless collection, no provisioned index, no per-token inference. Those are t
 line items that turn a personal demo into a monthly bill, and this architecture has
 none of them because the product does not need them.
 
+## Checking the deployment
+
+Deploying is not a claim until the two are compared:
+
+```powershell
+python verify_deployment.py <your Function URL>
+```
+
+It posts every held-out contract to the endpoint and diffs the response against
+`sheet.sheet()` run in the same process, field by field, then exercises the
+refusal paths against the live endpoint.
+
+Result on the first deployment:
+
+```
+refusal paths            8/8 as specified
+rows identical to local  102/102
+round trip               median 273 ms   p95 443 ms   max 600 ms
+states returned          found 495, absent 219, review 68, absent_review 34
+```
+
+The `review` and `absent_review` counts matter: they are the human-review gate
+firing on the clauses where a wrong "absent" is expensive. A deployment that
+returned none of them would be serving a different product from the measured one.
+
 ## What this does not change
 
 The deployment does not touch the model, the thresholds or the measurements. The
-sheet returned by the Function URL is identical, row for row, to
-`sheet.sheet()` run locally — verified on all 101 held-out contracts. The numbers
-on the page are still the ones `measure_sheet.py` prints: 571 of 748 rows, 76.3%.
+sheet returned by the Function URL is identical, row for row, to `sheet.sheet()`
+run locally — verified on every held-out contract, by the script above. The
+numbers on the page are still the ones `measure_sheet.py` prints: 571 of 748
+rows, 76.3%.

@@ -138,7 +138,8 @@ a{color:var(--accent)}
   <div class="facts">
     <div class="fact"><b>76.3%</b><span>rows correct, 101 held-out contracts</span></div>
     <div class="fact"><b>+30</b><span>points over the naive parse</span></div>
-    <div class="fact"><b id="ms">&mdash;</b><span>milliseconds, this request</span></div>
+    <div class="fact"><b id="ms">&mdash;</b><span>ms inside the function</span></div>
+    <div class="fact"><b id="rt">&mdash;</b><span>ms you waited, including the network</span></div>
     <div class="fact"><b>34 KB</b><span>deployment package, zero dependencies</span></div>
   </div>
 </header>
@@ -197,6 +198,13 @@ The sheet is built for English-language commercial agreements: the corpus behind
       one would be the unrepresentative choice.</p>
     </div>
     <div class="card">
+      <h3>Two timings, and the gap between them</h3>
+      <p>The function itself answers in single-digit milliseconds. What you waited for is
+      that plus the trip to the region it runs in &mdash; from Mexico to <span class="val">us-east-1</span>
+      the network is the overwhelming majority of it. Both numbers are on the page because
+      only one of them is the experience.</p>
+    </div>
+    <div class="card">
       <h3>Short contracts are out of distribution</h3>
       <p>Presence rows are scored over 1,600-character windows, and the corpus median is 32 KB.
       Paste two pages and the cue terms have almost nowhere to land: the rows will come back,
@@ -225,6 +233,12 @@ const ENDPOINT = "";
 const $ = id => document.getElementById(id);
 const epbox = $("epbox"), ep = $("ep"), ta = $("text"), out = $("out"),
       foot = $("foot"), go = $("go");
+
+// The function reports its own compute time. What the reader actually waits for
+// is that plus the round trip, and from far enough away the round trip is most
+// of it. Reporting only the first under a label that reads like the second is
+// the same mistake as a population rate wearing the clothes of a per-row one.
+let roundTripMs = null;
 
 // Read at call time, never cached: a value restored by the browser or pasted
 // without firing an input event would otherwise be ignored.
@@ -279,12 +293,14 @@ function render(data) {
     `<span>to review <b>${s.to_review}</b></span>` +
     `<span><b>${data.characters.toLocaleString()}</b> characters read</span>`;
   $("ms").textContent = data.elapsed_ms;
+  $("rt").textContent = roundTripMs == null ? "\u2014" : Math.round(roundTripMs);
 }
 
 function fail(msg) {
   out.innerHTML = `<p class="err">${esc(msg)}</p>`;
   foot.hidden = true;
   $("ms").innerHTML = "&mdash;";
+  $("rt").innerHTML = "&mdash;";
 }
 
 async function build() {
@@ -295,6 +311,7 @@ async function build() {
   go.disabled = true;
   out.innerHTML = `<p class="empty">Reading&hellip;</p>`;
   foot.hidden = true;
+  const started = performance.now();
   try {
     const res = await fetch(endpoint, {
       method: "POST",
@@ -302,6 +319,7 @@ async function build() {
       body: JSON.stringify({ text })
     });
     const data = await res.json().catch(() => null);
+    roundTripMs = performance.now() - started;
     if (!res.ok) return fail(`${res.status} — ${(data && data.error) || res.statusText}`);
     render(data);
   } catch (e) {
