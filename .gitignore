@@ -4,12 +4,6 @@ cuad/
 
 # Build output: produced on every run
 page.html
-sheet-lambda.zip
-aws/bucket-policy.local.json
-
-# The page with a live endpoint baked in. A Function URL with auth NONE is
-# callable by anyone holding it, and this repository is public.
-web/deploy/
 
 # Fitted parameters the product reads at runtime are NOT ignored:
 # retrieval_model.json and calibration.json are versioned on purpose.
