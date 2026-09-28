@@ -76,45 +76,51 @@ def row_for(category, loc, det, text):
         regla, confidence = RULES[k]
         if confidence < MIN_CONFIDENCE:
             return {**anchor_at, "state": "model_pending", "value": None,
-                    "text": None, "confidence": confidence, "start": None}
+                    "text": None, "confidence": confidence, "confidence_kind": "clause", "start": None}
         frs = loc.fragments(category)
         value = regla(frs) if frs else None
         if not value:
-            state = "absent" if bucket_of != "humano" else "review"
+            state = "absent" if bucket_of != "human" else "review"
             return {**anchor_at, "state": state, "value": None, "text": None,
-                    "confidence": confidence, "start": None}
+                    "confidence": confidence, "confidence_kind": "clause", "start": None}
         return {**anchor_at,
-                "state": "review" if bucket_of == "humano" else "found",
+                "state": "review" if bucket_of == "human" else "found",
                 "value": value, "text": " ".join(frs[0].split())[:300],
-                "confidence": confidence, "start": None}
+                "confidence": confidence, "confidence_kind": "clause", "start": None}
 
     # --- presence categories --------------------------------------------
-    nombre_det = equivalent(category, det.cues)
-    if nombre_det is None:
-        return {**anchor_at, "state": "review", "value": None,
-                "text": None, "confidence": None, "start": None}
+    detector_name = equivalent(category, det.cues)
+    if detector_name is None:
+        return {**anchor_at, "state": "review", "value": None, "text": None,
+                "confidence": None, "confidence_kind": None, "start": None}
 
-    state, conf, start = det.evaluate(nombre_det, text)
-    # una category cara nunca se cierra sola, aunque el detector este seguro
-    if bucket_of == "humano" and state in ("found", "absent"):
+    state, conf, start = det.evaluate(detector_name, text)
+    # An expensive category never closes on its own, however sure the detector is
+    if bucket_of == "human" and state in ("found", "absent"):
         state = "review" if state == "found" else "absent_review"
     frag = " ".join(text[start:start + 400].split()) if start is not None else None
     return {**anchor_at, "state": state, "value": "present" if "found" in state
-            else None, "text": frag, "confidence": conf, "start": start}
+            else None, "text": frag, "confidence": conf,
+            "confidence_kind": "row", "start": start}
 
 
-def sheet(text, completo=False):
-    """completo=True devuelve las 41; por defecto solo las 10 del scope."""
+def sheet(text, full=False):
+    """full=True returns all 41; by default only the clauses in scope."""
     loc = TextLocator(text)
     det = PresenceDetector()
-    cats = CONFIG if completo else [c for c in CONFIG if key_of(c) in SCOPE]
+    cats = CONFIG if full else [c for c in CONFIG if key_of(c) in SCOPE]
     out = []
     for c in cats:
         e = row_for(c, loc, det, text)
         a = SCOPE.get(key_of(c))
         if a:
-            e["confidence"] = a["measure"]
             e["engine"] = a["engine"]
+            # A rule row has no per-row signal, so it carries the clause's
+            # measured accuracy. A presence row keeps its calibrated value.
+            if a["engine"] == "rule":
+                e["confidence"] = a["measure"]
+                e["confidence_kind"] = "clause"
+            e["clause_accuracy"] = a["measure"]
         out.append(e)
     return out
 

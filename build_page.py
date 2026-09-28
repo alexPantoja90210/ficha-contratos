@@ -136,8 +136,13 @@ def build_pages(nombres_elegidos, contracts, inside, det, cache):
                     if where is not None:
                         passage = " ".join(text[where:where + 340].split())
                         depth = round(100 * where / length)
+            # A rule row has no per-row signal, so it carries the clause's
+            # measured accuracy. A presence row carries its calibrated value.
+            conf = tested_for(cat) if engine == "rule" else e["confidence"]
             rows.append(dict(category=cat, engine=engine, state=e["state"],
-                                 value=e["value"], confidence=tested_for(cat),
+                                 value=e["value"], confidence=conf,
+                                 confidence_kind=e.get("confidence_kind"),
+                                 clause_accuracy=tested_for(cat),
                                  naive=naive_for(cat), span_range=span_range,
                                  passage=passage, depth=depth))
         out.append(dict(name=name, text=text[:MAX_TEXT],

@@ -177,6 +177,9 @@ a{color:var(--accent)}
     <p>Three real contracts from the held-out split, exhibits filed with the SEC. Each row says how deep
     into the document the clause was found and what the naive parse scores there. Rule-based rows jump to
     the paragraph; presence rows show the highest-scoring passage.</p>
+    <p>The number on a presence row is <b>calibrated for that row</b>: how often the detector was right when
+    it decided by that margin. Two contracts can show 92% and 50% on the same clause. A rule-based row has
+    no per-row signal, so it carries the clause's measured accuracy and says so.</p>
   </div>
   <div class="picker" id="picker"></div>
   <div class="split">
@@ -185,7 +188,7 @@ a{color:var(--accent)}
       <div id="doc"></div>
     </div>
     <div class="panel">
-      <div class="panel-head"><span class="eyebrow">Sheet · 8 clauses</span><span class="eyebrow">held-out accuracy</span></div>
+      <div class="panel-head"><span class="eyebrow">Sheet · 8 clauses</span><span class="eyebrow">confidence</span></div>
       <table id="sheet"><tbody></tbody></table>
       <div class="foot" id="sheetfoot"></div>
     </div>
@@ -311,8 +314,10 @@ function paintSheet(c){
     }
     const meta = [];
     if (e.depth != null) meta.push(`at ${e.depth}% of the document`);
-    if (e.naive != null && e.confidence)
-      meta.push(`naive ${e.naive}% → <b>${e.confidence.toFixed(0)}%</b>`);
+    if (e.confidence_kind === "row" && e.clause_accuracy != null)
+      meta.push(`this row <b>${e.confidence.toFixed(0)}%</b> · clause ${e.clause_accuracy.toFixed(0)}%`);
+    else if (e.naive != null && e.confidence)
+      meta.push(`naive ${e.naive}% → <b>${e.confidence.toFixed(0)}%</b> for this clause`);
     tr.innerHTML =
       `<td style="width:1%"><span class="chip ${cls}">${lbl}</span></td>` +
       `<td><span class="cat">${esc(e.category)}</span>` +

@@ -154,10 +154,17 @@ included: CUAD is CC BY 4.0.
 | `measure_e2e.py` | measures locating plus normalizing |
 | `measure_rules.py` | measures normalizing alone |
 | `trivial_floor.py` | the floor each category has to clear |
+| `calibrate.py` | per-row confidence for presence clauses, and its calibration error |
+| `measure_bias.py` | accuracy by agreement type and document length |
+| `test_degradation.py` | does it fail safely on input it was not built for |
+| `test_security.py` | backtracking, dependency surface, no network |
 | `baseline_naive.py` | the parse that comes for free, as a comparison |
 
 ## Measured against NIST AI RMF
 
 This project was mapped against the NIST AI Risk Management Framework after it was
 built. It meets most of the MEASURE function and none of GOVERN, which is what a
-solo technical artifact should look like. See [NIST-AI-RMF.md](NIST-AI-RMF.md), and [ROADMAP.md](ROADMAP.md) for what it would take to close the open items.
+solo technical artifact should look like. See [NIST-AI-RMF.md](NIST-AI-RMF.md), and [ROADMAP.md](ROADMAP.md) for what it
+would take to close the open items. [AITRT.md](AITRT.md) runs the same exercise
+against an open risk taxonomy, which caught a calibration defect NIST left
+implicit.

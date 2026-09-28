@@ -24,25 +24,46 @@ MIN_LOCATION_TO_JUMP        = 50.0
 
 
 class PresenceDetector:
-    def __init__(self, path="retrieval_model.json"):
+    def __init__(self, path="retrieval_model.json", calibration="calibration.json"):
         d = json.loads(Path(path).read_text(encoding="utf-8"))
         self.cues = d["cues"]
         self.thresholds = d["thresholds"]
-        self.desempeno = {r["category"]: r for r in d["test"]}
+        self.performance = {r["category"]: r for r in d["test"]}
         self._cache = {}
+        # Per-row confidence: how far the score sits from the threshold, mapped
+        # to the accuracy that margin actually achieved. Without it every row of
+        # a clause carries the same number, which is a population rate wearing
+        # the clothes of a per-row probability.
+        try:
+            self.calibration = json.loads(Path(calibration).read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            self.calibration = {}
+
+    def row_confidence(self, category, score):
+        """Calibrated accuracy for this row, or None when uncalibrated."""
+        cal = self.calibration.get(category)
+        threshold = self.thresholds.get(category)
+        if not cal or threshold is None:
+            return None
+        margin, edges = abs(score - threshold), cal["edges"]
+        band = next((i for i in range(len(edges) - 1)
+                     if edges[i] <= margin < edges[i + 1]), len(edges) - 2)
+        return 100.0 * cal["bins"].get(str(band), cal["fallback"])
 
     def supports(self, category):
         return category in self.cues
 
     def evaluate(self, category, text):
         """-> (state, confidence, start|None)"""
-        perf = self.desempeno.get(category)
+        perf = self.performance.get(category)
         threshold = self.thresholds.get(category)
         if threshold is None or perf is None:
             return "review", None, None
 
         score, where = REC.score_windows(text, self.cues[category], self._cache)
-        conf = perf["balanced"]
+        conf = self.row_confidence(category, score)
+        if conf is None:
+            conf = perf["balanced"]
         located_pct = perf.get("located_pct")
 
         if score >= threshold:
