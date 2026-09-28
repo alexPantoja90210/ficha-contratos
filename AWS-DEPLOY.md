@@ -200,9 +200,21 @@ aws s3 cp web/index.html "s3://$BUCKET/index.html" --content-type "text/html; ch
 Outside `us-east-1`, `create-bucket` also needs
 `--create-bucket-configuration LocationConstraint=$REGION`.
 
-Open the page and paste the Function URL into the field at the top; it is kept in
-that browser only. To bake it in instead, set `ENDPOINT` at the top of the
-`<script>` block in `web/index.html` and upload again — then the field disappears.
+Build the page with the endpoint baked in, and upload that copy:
+
+```powershell
+python build_web.py $URL
+aws s3 cp web/deploy/index.html "s3://$BUCKET/index.html" --content-type "text/html; charset=utf-8"
+```
+
+`web/index.html` ships with the endpoint empty, which makes the page show a field
+to type one into. That field is for development: it keeps the value in browser
+storage, and on an S3 website endpoint that storage is not dependable — the field
+comes back empty on the next load. A deployed page should not ask its reader for
+configuration, so the deployable copy has the URL compiled in.
+
+The built copy is not committed. A Function URL with auth type NONE is callable by
+anyone holding it, and this repository is public.
 
 An S3 website endpoint is plain HTTP. That is fine here: mixed content is an
 HTTPS page loading an HTTP resource, and this is the other way round — an HTTP

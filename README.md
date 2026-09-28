@@ -168,6 +168,7 @@ included: CUAD is CC BY 4.0.
 | `web/index.html` | paste-a-contract page that calls the Function URL |
 | `AWS-DEPLOY.md` | deploying it, what it costs, and how to tear it down |
 | `verify_deployment.py` | diffs a deployed Function URL against local output |
+| `build_web.py` | bakes the endpoint into a deployable copy of the page |
 
 ## Measured against NIST AI RMF
 
