@@ -18,7 +18,7 @@ already there.
 |---|---:|---:|---:|---:|
 | GOVERN (6 categories) | 0 | 0 | 6 | 0 |
 | MAP (17 subcategories) | 8 | 4 | 4 | 1 |
-| MEASURE 1–2 (14 subcategories) | 7 | 2 | 4 | 1 |
+| MEASURE 1–2 (14 subcategories) | 11 | 0 | 2 | 1 |
 
 MEASURE 3 and 4 cover tracking risk in deployment and collecting feedback from
 users. The system is not deployed and has no users, so they are out of reach
@@ -38,12 +38,12 @@ rather than unmet.
 | **MEASURE 2.3** | Performance demonstrated under deployment-like conditions | Met | Measured on raw full contracts, not on pre-located paragraphs. `measure_e2e.py` reports the gap between the two. |
 | **MEASURE 2.4** | Behaviour monitored in production | Not met | Not deployed. |
 | **MEASURE 2.5** | Valid and reliable; generalizability limits documented | **Met** | Determinism verified across runs; a real non-determinism defect was found and fixed. Limits stated: English, US commercial contracts. |
-| **MEASURE 2.6** | Evaluated for safety; fails safely | Partial | The sheet degrades to `review` and `absent_review` rather than asserting. No formal safety evaluation. |
-| **MEASURE 2.7** | Security and resilience evaluated | Not met | Not examined. |
+| **MEASURE 2.6** | Evaluated for safety; fails safely | **Met** | `test_degradation.py` feeds ten kinds of input no corpus contains. It found the sheet asserting control characters and HTML fragments as a document title; `looks_like_title` now refuses them. No crashes, nothing asserted without a value. |
+| **MEASURE 2.7** | Security and resilience evaluated | **Met** | `test_security.py` times every pattern against adversarial input at the scale it actually receives, and asserts the standard-library-only dependency surface. It found a quadratic pattern, now bounded by `strip_descriptor`. |
 | **MEASURE 2.8** | Transparency and accountability risks documented | Met | Every row carries its measured accuracy; the 33 out-of-scope categories are published with their numbers. |
 | **MEASURE 2.9** | Model explained, validated, documented; output interpreted in context | **Met** | The rules are readable regular expressions and the learned cue terms are inspectable JSON. Nothing in the system is opaque. |
-| **MEASURE 2.10** | Privacy risk examined | Partial | Runs locally with no network calls, so no contract leaves the machine. Not formally examined. |
-| **MEASURE 2.11** | Fairness and bias evaluated | **Not met** | Not evaluated. |
+| **MEASURE 2.10** | Privacy risk examined | **Met** | The sheet runs to completion with `socket.socket` disabled and attempts no connection. The claim is asserted by a test rather than repeated in prose. |
+| **MEASURE 2.11** | Fairness and bias evaluated | **Met** | `measure_bias.py` reports accuracy per clause by agreement type and by document length, with Wilson intervals because groups hold 5 to 9 contracts. It found Document Name at 46% on the shortest quartile against 84% on the third. |
 
 ## MAP — mostly met at the system level
 

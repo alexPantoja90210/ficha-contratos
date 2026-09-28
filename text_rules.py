@@ -21,9 +21,14 @@ ENTITY_WITH_ALIAS = re.compile(
         \s*["”’']?\s*\)""",
     re.X)
 
+# The company descriptor between a party name and its alias.
+# The leading separator is a single optional comma rather than [,\s]+, and the
+# middle class excludes commas and parentheses: with the loose version this
+# pattern took 40 seconds on adversarial whitespace, which is a denial of
+# service on a 338,000-character contract.
 DESCRIPTOR = re.compile(
-    r"(?i)[,\s]+(a|an|the)\s+[\w\- ]{0,40}?"
-    r"(corporation|company|llc|l\.l\.c\.|inc\.?|ltd\.?|limited|partnership|"
+    r"(?i)\s*,?\s*(?:an?|the)\s[^,()]{0,40}?"
+    r"(?:corporation|company|llc|l\.l\.c\.|inc\.?|ltd\.?|limited|partnership|"
     r"gmbh|s\.a\.|b\.v\.|plc|trust|association|entity)\s*$")
 
 ALIAS_NOT_PARTY = re.compile(
@@ -36,7 +41,7 @@ def parties_from_text(fragments, maximo=6):
     out, seen = [], set()
     for f in fragments:
         for m in ENTITY_WITH_ALIAS.finditer(f):
-            name = DESCRIPTOR.sub("", m.group(1)).strip(" ,;.")
+            name = strip_descriptor(m.group(1)).strip(" ,;.")
             alias = m.group(2).strip(" ,;.")
             if len(name) < 4 or ALIAS_NOT_PARTY.match(alias):
                 continue

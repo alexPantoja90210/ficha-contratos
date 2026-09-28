@@ -193,8 +193,24 @@ def rule_expiration(frs, fecha_efectiva):
         dia = 28
     return to_mmddyy(mes, dia, anio)
 
+# A title is mostly letters and holds at least one real word. Without this the
+# rule happily returns control characters, an HTML tag or a single byte: it
+# cannot crash, but it asserts nonsense, which is the worse failure.
+CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
+
+def looks_like_title(text):
+    t = CONTROL.sub("", text or "").strip()
+    if len(t) < 8 or len(t) > 200 or "<" in t or ">" in t:
+        return None
+    letters = sum(c.isalpha() or c.isspace() for c in t)
+    if letters / len(t) < 0.6:
+        return None
+    if not re.search(r"[A-Za-z]{3,}", t):
+        return None
+    return t
+
 def rule_name(frs):
-    return frs[0].strip() if frs else None
+    return looks_like_title(frs[0]) if frs else None
 
 def rule_parties(frs):
     seen, out = set(), []
