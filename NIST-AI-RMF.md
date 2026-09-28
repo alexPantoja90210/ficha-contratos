@@ -17,7 +17,7 @@ already there.
 | Function | Met | Partial | Not met | N/A |
 |---|---:|---:|---:|---:|
 | GOVERN (6 categories) | 0 | 0 | 6 | 0 |
-| MAP (17 subcategories) | 8 | 4 | 4 | 1 |
+| MAP (17 subcategories) | 13 | 0 | 3 | 1 |
 | MEASURE 1–2 (14 subcategories) | 11 | 0 | 2 | 1 |
 
 MEASURE 3 and 4 cover tracking risk in deployment and collecting feedback from
@@ -54,13 +54,15 @@ integrity and TEVV design (the split is by contract, never by question) ·
 (`scope.py` is this subcategory) · **3.5** human oversight defined · **4.1**
 third-party data licensing (CUAD, CC BY 4.0).
 
-Partial: **1.4** business value, **1.5** risk tolerance (thresholds are explicit
-but not organizational), **4.2** internal risk controls, **5.1** impact
-likelihood and magnitude.
+Also met, in Wave 2: **1.4** business value ([VALUE.md](VALUE.md), a model with
+its assumptions named rather than a result), **1.5** risk tolerance and **4.2**
+internal risk controls and **5.1** impact likelihood and magnitude
+([RISK.md](RISK.md)), **3.4** operator proficiency
+([USING-THE-SHEET.md](USING-THE-SHEET.md)).
 
 Not met: **1.2** interdisciplinary actors and demographic diversity, **1.3**
-organizational mission, **1.6** requirements elicited from AI actors, **3.4**
-operator proficiency processes. All four need people this project does not have.
+organizational mission, **1.6** requirements elicited from AI actors. All three
+need people this project does not have.
 
 ## GOVERN — none of it
 
