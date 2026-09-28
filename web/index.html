@@ -257,6 +257,12 @@ if (!ENDPOINT) {
   });
 }
 
+// SAMPLE is defined at the end of this script. A const is not hoisted, so it is
+// read through a function that only runs after the whole script has evaluated.
+function sampleText() {
+  try { return SAMPLE; } catch (e) { return ""; }
+}
+
 const CHIP = {
   found:         ["ok",  "found"],
   absent:        ["no",  "not present"],
@@ -300,6 +306,10 @@ function render(data) {
   $("rt").textContent = roundTripMs == null ? "\u2014" : Math.round(roundTripMs);
 }
 
+function note(msg) {
+  out.innerHTML = `<p class="empty">${esc(msg)}</p>`;
+}
+
 function fail(msg) {
   out.innerHTML = `<p class="err">${esc(msg)}</p>`;
   foot.hidden = true;
@@ -308,10 +318,22 @@ function fail(msg) {
 }
 
 async function build() {
+  // An empty box and a click on the primary button means the reader wants to
+  // see this work. Loading the sample is what they were going to do next
+  // anyway, so do it rather than refusing and making them find the other
+  // button.
+  let loadedSample = false;
+  if (!ta.value.trim() && sampleText()) {
+    ta.value = sampleText();
+    count();
+    loadedSample = true;
+  }
   const text = ta.value.trim();
   const endpoint = endpointNow();
   if (!text) return fail("Paste a contract first.");
   if (!endpoint) return fail("Set the Function URL above first.");
+  if (loadedSample) note("No contract in the box, so this is the sample: a real "
+                       + "sponsorship agreement from the held-out split.");
   go.disabled = true;
   out.innerHTML = `<p class="empty">Reading&hellip;</p>`;
   foot.hidden = true;
