@@ -1,11 +1,12 @@
-# El corpus: 27 MB, se reconstruye desde CUAD (ver README)
-contratos.json
+# The corpus: 27 MB, rebuilt from CUAD (see README)
+contracts.json
 cuad/
 
-# Salidas de compilacion: las produce armar_pantalla.py
-revisor.html
-datos_pantalla.json
-ficha_ejemplo.json
+# Build output: produced by build_page.py on every run
+page.html
+
+# Fitted parameters the product reads at runtime are NOT ignored:
+# retrieval_model.json and calibration.json are versioned on purpose.
 
 __pycache__/
 *.pyc
