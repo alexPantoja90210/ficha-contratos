@@ -149,6 +149,14 @@ policy for you. Only the CLI, the API and CloudFormation leave it to you. Note
 that deleting the URL does not remove the policy either way — the teardown
 section handles that.
 
+**Configure CORS in one place only.** The function emits no CORS headers of its
+own, by design. A Function URL with CORS configured adds them to every response
+and answers the preflight itself. If the function emitted them too, every
+response would carry `access-control-allow-origin` twice, and a browser rejects
+that — while curl, `urllib` and every other script accept it happily, because no
+HTTP client enforces CORS. A deployment can pass every other check and still be
+unusable from a page. `verify_deployment.py` checks for this specifically.
+
 Get the URL:
 
 ```powershell
@@ -267,6 +275,9 @@ refusal paths against the live endpoint.
 Result on the first deployment:
 
 ```
+CORS, as a browser would see it
+  allow-origin on a POST      '*'   ok
+  preflight                   200, allow-origin x1, methods GET,POST   ok
 refusal paths            8/8 as specified
 rows identical to local  102/102
 round trip               median 273 ms   p95 443 ms   max 600 ms

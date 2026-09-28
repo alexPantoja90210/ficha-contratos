@@ -25,24 +25,64 @@ CORPUS_CANDIDATES = [Path("contracts.json"), HERE / "contracts.json",
 TIMEOUT = 30
 
 
-def call(url, payload=None, method=None, raw=None):
-    """-> (status, parsed body or raw text, elapsed ms)"""
+def call(url, payload=None, method=None, raw=None, origin=None):
+    """-> (status, parsed body or raw text, elapsed ms, response headers)"""
     data = raw if raw is not None else (
         json.dumps(payload).encode("utf-8") if payload is not None else None)
+    headers = {"content-type": "application/json"}
+    if origin:
+        headers["Origin"] = origin
     req = urllib.request.Request(
         url, data=data, method=method or ("POST" if data is not None else "GET"),
-        headers={"content-type": "application/json"})
+        headers=headers)
     started = time.perf_counter()
     try:
         with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
-            body, status = r.read().decode("utf-8"), r.status
+            body, status, got = r.read().decode("utf-8"), r.status, r.headers
     except urllib.error.HTTPError as e:
-        body, status = e.read().decode("utf-8"), e.code
+        body, status, got = e.read().decode("utf-8"), e.code, e.headers
     ms = (time.perf_counter() - started) * 1000
     try:
-        return status, json.loads(body), ms
+        return status, json.loads(body), ms, got
     except ValueError:
-        return status, body, ms
+        return status, body, ms, got
+
+
+def check_cors(url):
+    """A browser is the only client that enforces CORS. This is that check.
+
+    A response carrying "access-control-allow-origin" twice is rejected by every
+    browser and by no script, so a deployment can pass every other test here and
+    still be unusable from a page. It happens when the function emits the header
+    AND whatever fronts it adds the same one.
+    """
+    print("CORS, as a browser would see it")
+    origin = "http://example.invalid"
+    ok = True
+
+    status, _, _, h = call(url, payload={"text": "AGREEMENT"}, origin=origin)
+    allow = h.get_all("access-control-allow-origin") or []
+    if len(allow) == 1:
+        print(f"  allow-origin on a POST      {allow[0]!r}   ok")
+    elif not allow:
+        print("  allow-origin on a POST      MISSING   a browser will refuse")
+        ok = False
+    else:
+        print(f"  allow-origin on a POST      SENT {len(allow)} TIMES {allow}")
+        print("      A browser rejects a response with more than one value here.")
+        print("      Configure CORS in one place only: the function or the")
+        print("      Function URL, never both.")
+        ok = False
+
+    status, _, _, h = call(url, method="OPTIONS", raw=b"", origin=origin)
+    pre = h.get_all("access-control-allow-origin") or []
+    methods = (h.get("access-control-allow-methods") or "").upper()
+    good_pre = status in (200, 204) and len(pre) == 1 and "POST" in methods
+    print(f"  preflight                   {status}, allow-origin x{len(pre)}, "
+          f"methods {methods or '(none)'}   {'ok' if good_pre else 'PROBLEM'}")
+    ok = ok and good_pre
+    print()
+    return ok
 
 
 def default_corpus():
@@ -70,7 +110,7 @@ def check_refusals(url):
     print("refusal paths")
     ok = 0
     for name, expected, kw in cases:
-        status, body, _ = call(url, **kw)
+        status, body, _, _ = call(url, **kw)
         good = status == expected
         ok += good
         msg = body.get("error", "") if isinstance(body, dict) else str(body)[:48]
@@ -95,7 +135,7 @@ def main():
 
     print(f"endpoint {url}\ncorpus   {corpus}\n")
 
-    status, body, ms = call(url)
+    status, body, ms, _ = call(url)
     if status != 200 or not isinstance(body, dict) or "scope" not in body:
         sys.exit(f"GET returned {status}: {str(body)[:300]}")
     s = body["scope"]
@@ -104,6 +144,7 @@ def main():
           f"measured {s['measured']['rows_correct_pct']}%   "
           f"naive {s['measured']['naive_parse_pct']}%\n")
 
+    cors_ok = check_cors(url)
     refusals_ok = check_refusals(url)
 
     contracts = json.loads(corpus.read_text(encoding="utf-8"))
@@ -117,7 +158,7 @@ def main():
     diffs, times, states = [], [], {}
     for i, name in enumerate(held_out, 1):
         text = contracts[name]
-        status, body, ms = call(url, payload={"text": text})
+        status, body, ms, _ = call(url, payload={"text": text})
         if status != 200 or not isinstance(body, dict):
             diffs.append((name, f"HTTP {status}: {str(body)[:120]}"))
             continue
@@ -148,7 +189,7 @@ def main():
         for name, what in diffs[:12]:
             print(f"  {name[:56]:58}{what}")
     print()
-    if same == len(held_out) and refusals_ok and not diffs:
+    if same == len(held_out) and refusals_ok and cors_ok and not diffs:
         print("The deployed endpoint returns exactly what sheet.py returns locally.")
         print("The published 76.3% describes this endpoint, not only the laptop.")
         return 0

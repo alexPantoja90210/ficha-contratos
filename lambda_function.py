@@ -11,6 +11,13 @@ answers in tens of milliseconds. Paying a per-token price and a per-hour index
 to reproduce a number that is already measured would be a downgrade with a
 monthly bill attached.
 
+CORS is NOT set here. A Function URL configured with CORS adds those headers to
+every response and answers the preflight itself without invoking this function.
+Emitting them here as well sends "access-control-allow-origin" twice, and a
+browser rejects a response carrying two values where one is allowed — which a
+script never notices, because no HTTP client enforces CORS. Configure CORS on
+the Function URL (see AWS-DEPLOY.md), or on whatever fronts this function.
+
 Request   POST /            {"text": "<contract as plain text>"}
 Response  200               {"rows": [...], "elapsed_ms": 17.2, "scope": {...}}
           GET  /            {"scope": {...}, "clauses": [...]}   no body needed
@@ -28,12 +35,7 @@ HERE = Path(__file__).resolve().parent
 # limit and exists to reject a body that is not a contract at all.
 MAX_CHARS = 1_000_000
 
-CORS = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "content-type",
-    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-}
-JSON_HEADERS = {"content-type": "application/json; charset=utf-8", **CORS}
+JSON_HEADERS = {"content-type": "application/json; charset=utf-8"}
 
 # Built once per container, not per request.
 SCOPE_SUMMARY = {
@@ -96,8 +98,12 @@ def handler(event, context):
                    .get("http", {})
                    .get("method", "POST")).upper()
 
+    # A preflight only reaches here when nothing in front of the function is
+    # configured for CORS. Answering it with no CORS headers is honest: the
+    # browser will refuse, and the refusal points at the missing configuration
+    # rather than at this code.
     if method == "OPTIONS":
-        return {"statusCode": 204, "headers": CORS, "body": ""}
+        return {"statusCode": 204, "headers": {}, "body": ""}
 
     if method == "GET":
         return _reply(200, {"scope": SCOPE_SUMMARY, "clauses": CLAUSES})
